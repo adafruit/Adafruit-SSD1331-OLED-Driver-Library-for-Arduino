@@ -5,13 +5,9 @@
 // If we are using the hardware SPI interface, these are the pins (for future ref)
 #define sclk 13
 #define mosi 11
-
-// You can also just connect the reset pin to +5V (we do a software reset)
-#define rst 8
-
-// these pins are required
-#define cs 10
-#define dc 9
+#define cs 6
+#define dc 7
+#define rst 8  // you can also connect this to the Arduino reset
 
 // Color definitions
 #define	BLACK           0x0000
@@ -38,6 +34,19 @@ File bmpFile;
 int bmpWidth, bmpHeight;
 uint8_t bmpDepth, bmpImageoffset;
 
+
+void testtext(uint16_t color) {
+  tft.fillScreen(BLACK);
+  tft.setCursor(0, 20);
+  tft.setTextColor(color);
+  tft.setTextSize(1);
+  tft.println("Hello World!");
+  tft.setTextSize(1);
+  tft.println(1234.56);
+  tft.setTextSize(1);
+  tft.println(0xDEADBEEF, HEX);
+}
+
 void setup(void) {
   Serial.begin(9600);
    
@@ -47,9 +56,11 @@ void setup(void) {
   // initialize a ST7735R TFT
   tft.initDisplay();
 
-  // Just do a simple test
+  Serial.println("init");
+  
   tft.fillScreen(BLUE);
   
+  delay(500);
   Serial.print("Initializing SD card...");
 
   if (!SD.begin(SD_CS)) {
@@ -57,13 +68,15 @@ void setup(void) {
     return;
   }
   Serial.println("SD OK!");
-  
+
   bmpFile = SD.open("violet.bmp");
   
   if (! bmpFile) {
     Serial.println("didnt find image");
     while (1);
   }
+
+  tft.println("Found BMP");
   
   if (! bmpReadHeader(bmpFile)) { 
      Serial.println("bad bmp");
@@ -143,10 +156,10 @@ void bmpdraw(File f, int x, int y) {
       p |= b;
      //Serial.print(p, HEX);
       // write out the 16 bits of color
-    Serial.print("x: "); Serial.print(i); Serial.print(", y:"); Serial.println(j);
-     // tft.drawPixel(10, 20, YELLOW);
+   // Serial.print("x: "); Serial.print(i); Serial.print(", y:"); Serial.println(j);
+     tft.drawPixel(j, bmpHeight-i, p);
     //  tft.pushColor(p);
-      tft.fillScreen(RED);
+    //  tft.fillScreen(RED);
 
     }
   }
