@@ -54,7 +54,6 @@ void setup(void) {
   
   lcdTestPattern();
   delay(1000);
-
   //
   tft.fillScreen(BLACK);
   testdrawtext("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa, fringilla sed malesuada et, malesuada sit amet turpis. Sed porttitor neque ut ante pretium vitae malesuada nunc bibendum. Nullam aliquet ultrices massa eu hendrerit. Ut sed nisi lorem. In vestibulum purus a tortor imperdiet posuere. ", WHITE);
@@ -62,7 +61,7 @@ void setup(void) {
   
   // tft print function!
   tftPrintTest();
-  delay(4000);
+  delay(2000);
   
   //a single pixel
   tft.drawPixel(tft.width()/2, tft.height()/2, GREEN);
@@ -85,15 +84,15 @@ void setup(void) {
   tft.fillScreen(BLACK);
   testfillcircles(10, BLUE);
   testdrawcircles(10, WHITE);
-  
+  delay(1000);
+   
   testroundrects();
   delay(500);
   
   testtriangles();
   delay(500);
   
-  mediabuttons();
-  delay(500);
+  while (1);
   
   Serial.println("done");
   delay(1000);
@@ -153,14 +152,14 @@ void testfastlines(uint16_t color1, uint16_t color2) {
 
 void testdrawrects(uint16_t color) {
  tft.fillScreen(BLACK);
- for (uint16_t x=0; x < tft.width()-1; x+=6) {
+ for (uint16_t x=0; x < tft.height()-1; x+=6) {
    tft.drawRect((tft.width()-1)/2 -x/2, (tft.height()-1)/2 -x/2 , x, x, color);
  }
 }
 
 void testfillrects(uint16_t color1, uint16_t color2) {
  tft.fillScreen(BLACK);
- for (uint16_t x=tft.width()-1; x > 6; x-=6) {
+ for (uint16_t x=tft.height()-1; x > 6; x-=6) {
    tft.fillRect((tft.width()-1)/2 -x/2, (tft.height()-1)/2 -x/2 , x, x, color1);
    tft.drawRect((tft.width()-1)/2 -x/2, (tft.height()-1)/2 -x/2 , x, x, color2);
  }
@@ -186,10 +185,10 @@ void testtriangles() {
   tft.fillScreen(BLACK);
   int color = 0xF800;
   int t;
-  int w = 63;
-  int x = 159;
+  int w = tft.width()/2;
+  int x = tft.height();
   int y = 0;
-  int z = 127;
+  int z = tft.width();
   for(t = 0 ; t <= 15; t+=1) {
     tft.drawTriangle(w, y, y, x, z, x, color);
     x-=4;
@@ -207,8 +206,8 @@ void testroundrects() {
   for(t = 0 ; t <= 4; t+=1) {
   int x = 0;
   int y = 0;
-  int w = 127;
-  int h = 159;
+  int w = tft.width();
+  int h = tft.height();
     for(i = 0 ; i <= 24; i+=1) {
     tft.drawRoundRect(x, y, w, h, 5, color);
     x+=2;
@@ -230,14 +229,11 @@ void tftPrintTest() {
   tft.setTextColor(YELLOW);
   tft.setTextSize(2);
   tft.println("Hello World!");
-  tft.setTextColor(GREEN);
-  tft.setTextSize(3);
-  tft.println("Hello World!");
   tft.setTextColor(BLUE);
-  tft.setTextSize(4);
+  tft.setTextSize(3);
   tft.print(1234.567);
   delay(1500);
-  tft.goHome(); // go to 0, 0
+  tft.setCursor(0, 5);
   tft.fillScreen(BLACK);
   tft.setTextColor(WHITE);
   tft.setTextSize(0);

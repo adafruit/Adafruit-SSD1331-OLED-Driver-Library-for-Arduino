@@ -139,6 +139,10 @@ void Adafruit_SSD1331::drawString(uint16_t x, uint16_t y, char *c,
   while (c[0] != 0) {
     drawChar(x, y, c[0], color, size);
     x += size*6;
+    if ((x+5) > TFTWIDTH) {
+      x = 0;
+      y += size*8;
+    }
     c++;
   }
 }
