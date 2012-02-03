@@ -18,8 +18,8 @@
 #endif
 
 // Timing Delays
-#define SSD1331_DELAYS_HWFILL		(5)
-#define SSD1331_DELAYS_HWLINE       (3)
+#define SSD1331_DELAYS_HWFILL		(3)
+#define SSD1331_DELAYS_HWLINE       (1)
 
 // SSD1331 Commands
 #define SSD1331_CMD_DRAWLINE 		0x21

@@ -184,7 +184,7 @@ void Adafruit_SSD1331::fillTriangle ( int32_t x0, int32_t y0, int32_t x1, int32_
 
   int32_t dx1, dx2, dx3; // Interpolation deltas
   int32_t sx1, sx2, sy; // Scanline co-ordinates
-
+  
   sx2=(int32_t)x0 * (int32_t)1000; // Use fixed point math for x axis values
   sx1 = sx2;
   sy=y0;
@@ -240,6 +240,13 @@ uint16_t Adafruit_SSD1331::Color565(uint8_t r, uint8_t g, uint8_t b) {
 // draw a rectangle
 void Adafruit_SSD1331::drawRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
 		      uint16_t color) {
+			  
+  if ((w == 1) && (h == 1))
+  {
+	drawPixel(x, y, color);
+	return;
+  }
+  
   // smarter version
   drawHorizontalLine(x, y, w, color);
   drawHorizontalLine(x, y+h-1, w, color);
@@ -367,12 +374,23 @@ void Adafruit_SSD1331::drawCircleHelper(uint16_t x0, uint16_t y0, uint16_t r, ui
 */
 /**************************************************************************/
 void Adafruit_SSD1331::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor) 
-{
-  if ((x >= TFTWIDTH) || (x+w >= TFTWIDTH) ||
-      (y >= TFTHEIGHT) || (y+h >= TFTHEIGHT)) {
-      return;
-	}
+{	
+  // Bounds check
+  if ((x >= TFTWIDTH) || (y >= TFTHEIGHT))
+	return;
 
+  // Y bounds check
+  if (y+h >= TFTHEIGHT)
+  {
+    h = TFTHEIGHT - y - 1;
+  }
+
+  // X bounds check
+  if (x+w >= TFTWIDTH)
+  {
+    w = TFTWIDTH - x - 1;
+  }
+  
   // fill!
   writeCommand(SSD1331_CMD_FILL);
   writeCommand(0x01);
@@ -380,17 +398,17 @@ void Adafruit_SSD1331::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
   writeCommand(SSD1331_CMD_DRAWRECT);
   writeCommand(x & 0xFF);							// Starting column
   writeCommand(y & 0xFF);							// Starting row
-  writeCommand((x+w) & 0xFF);						// End column
-  writeCommand((y+h) & 0xFF);						// End row
-
+  writeCommand((x+w) & 0xFF);	// End column
+  writeCommand((y+h) & 0xFF);	// End row
+  
   // Outline color
-  writeCommand((uint8_t)((fillcolor >> 11) & 0x1F));
+  writeCommand((uint8_t)((fillcolor >> 11) << 1));
   writeCommand((uint8_t)((fillcolor >> 5) & 0x3F));
-  writeCommand((uint8_t)(fillcolor & 0x1F));
+  writeCommand((uint8_t)((fillcolor << 1) & 0x3F));
   // Fill color
-  writeCommand((uint8_t)((fillcolor >> 11) & 0x1F));
+  writeCommand((uint8_t)((fillcolor >> 11) << 1));
   writeCommand((uint8_t)((fillcolor >> 5) & 0x3F));
-  writeCommand((uint8_t)(fillcolor & 0x1F));
+  writeCommand((uint8_t)((fillcolor << 1) & 0x3F));
  
   // Delay while the fill completes
   delay(SSD1331_DELAYS_HWFILL); 
@@ -398,14 +416,30 @@ void Adafruit_SSD1331::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
 
 void Adafruit_SSD1331::drawVerticalLine(uint16_t x, uint16_t y, uint16_t length, uint16_t color)
 {
-  if (x >= _width) return;
-  drawLine(x, y, x, y+length, color);
+  if (x >= TFTWIDTH) return;
+  if (y >= TFTHEIGHT) return;
+    
+  // Y bounds check
+  if (y+length >= TFTHEIGHT)
+  {
+    length = TFTHEIGHT - y - 1;
+  }
+	
+  drawLine(x, y, x, y+length-1, color);
 }
 
 void Adafruit_SSD1331::drawHorizontalLine(uint16_t x, uint16_t y, uint16_t length, uint16_t color)
 {
-  if (y >= _height) return;
-  drawLine(x, y, x+length, y, color);
+  if (y >= TFTHEIGHT) return;
+  if (x >= TFTWIDTH) return;
+
+  // X bounds check
+  if (x+length >= TFTWIDTH)
+  {
+    length = TFTWIDTH - x - 1;
+  }
+  
+  drawLine(x, y, x+length-1, y, color);
 }
 
 void Adafruit_SSD1331::drawFastLine(uint16_t x, uint16_t y, uint16_t length, 
@@ -421,45 +455,39 @@ void Adafruit_SSD1331::drawFastLine(uint16_t x, uint16_t y, uint16_t length,
 	if (rotflag)
 	{
 		// Vertical line
-		drawLine(x, y, x+length, y, color);
+		drawLine(x, y, x+length-1, y, color);
 	}
 	else
 	{
 		// Horizontal line
-		drawLine(x, y, x, y+length, color);
+		drawLine(x, y, x, y+length-1, color);
 	}
 }
 
-void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) 
-{
-  uint16_t x, pixels;
-
-  // Switch x1 and x0 if required
-  if (x1 < x0)
-  {
-    x = x1;
-    x1 = x0;
-    x0 = x;
-  }
-
-  // Switch y1 and y0 if required
-  if (y1 < y0)
-  {
-    x = y1;
-    y1 = y0;
-    y0 = x;
-  }
-
+void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {	
+  // Boundary check
+  if ((y0 >= TFTHEIGHT) && (y1 >= TFTHEIGHT))
+	return;
+  if ((x0 >= TFTWIDTH) && (x1 >= TFTWIDTH))
+	return;	
+  if (x0 >= TFTWIDTH)
+    x0 = TFTWIDTH - 1;
+  if (y0 >= TFTHEIGHT)
+    y0 = TFTHEIGHT - 1;
+  if (x1 >= TFTWIDTH)
+    x1 = TFTWIDTH - 1;
+  if (y1 >= TFTHEIGHT)
+    y1 = TFTHEIGHT - 1;
+  
   writeCommand(SSD1331_CMD_DRAWLINE);
   writeCommand(x0);
   writeCommand(y0);
   writeCommand(x1);
   writeCommand(y1);
   delay(SSD1331_DELAYS_HWLINE);  
-  writeCommand((uint8_t)((color >> 11) & 0x1F));
+  writeCommand((uint8_t)((color >> 11) << 1));
   writeCommand((uint8_t)((color >> 5) & 0x3F));
-  writeCommand((uint8_t)(color & 0x1F));
-  delay(SSD1331_DELAYS_HWLINE);  
+  writeCommand((uint8_t)((color << 1) & 0x3F));
   delay(SSD1331_DELAYS_HWLINE);  
 }
 
