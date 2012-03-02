@@ -1,9 +1,28 @@
+/*************************************************** 
+  This is a example sketch demonstrating the graphics
+  capabilities of the SSD1331 library  for the 0.96" 
+  16-bit Color OLED with SSD1331 driver chip
+
+  Pick one up today in the adafruit shop!
+  ------> http://www.adafruit.com/products/684
+
+  These displays use SPI to communicate, 4 or 5 pins are required to  
+  interface
+  Adafruit invests time and resources providing this open source code, 
+  please support Adafruit and open-source hardware by purchasing 
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  BSD license, all text above must be included in any redistribution
+ ****************************************************/
+
+
 // You can use any (4 or) 5 pins 
-#define sclk 4
-#define mosi 5
-#define cs   6
-#define dc   7
-#define rst  8  // you can also connect this to the Arduino reset
+#define sclk 13
+#define mosi 11
+#define cs   10
+#define dc   9
+#define rst  8
 
 // Color definitions
 #define	BLACK           0x0000
@@ -19,13 +38,13 @@
 #include <SPI.h>
 
 // Option 1: use any pins but a little slower
-// Adafruit_SSD1331 tft = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
+Adafruit_SSD1331 tft = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
 
 // Option 2: must use the hardware SPI pins 
 // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be 
 // an output. This is much faster - also required if you want
 // to use the microSD card (see the image drawing example)
-Adafruit_SSD1331 tft = Adafruit_SSD1331(cs, dc, rst);
+//Adafruit_SSD1331 tft = Adafruit_SSD1331(cs, dc, rst);
 
 float p = 3.1415926;
 
