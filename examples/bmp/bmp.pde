@@ -20,12 +20,13 @@
 #include <SD.h>
 #include <SPI.h>
 
+
 // If we are using the hardware SPI interface, these are the pins (for future ref)
 #define sclk 13
 #define mosi 11
-#define cs 6
-#define dc 7
-#define rst 8  // you can also connect this to the Arduino reset
+#define cs   10
+#define rst  9
+#define dc   8
 
 // Color definitions
 #define	BLACK           0x0000

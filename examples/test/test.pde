@@ -21,8 +21,9 @@
 #define sclk 13
 #define mosi 11
 #define cs   10
-#define dc   9
-#define rst  8
+#define rst  9
+#define dc   8
+
 
 // Color definitions
 #define	BLACK           0x0000
