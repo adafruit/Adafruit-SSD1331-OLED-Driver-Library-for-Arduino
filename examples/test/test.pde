@@ -14,6 +14,10 @@
 
   Written by Limor Fried/Ladyada for Adafruit Industries.  
   BSD license, all text above must be included in any redistribution
+
+  The Adafruit GFX Graphics core library is also required
+  https://github.com/adafruit/Adafruit-GFX-Library
+  Be sure to install it!
  ****************************************************/
 
 
@@ -35,6 +39,7 @@
 #define YELLOW          0xFFE0  
 #define WHITE           0xFFFF
 
+#include "Adafruit_GFX.h"
 #include <Adafruit_SSD1331.h>
 #include <SPI.h>
 
@@ -61,24 +66,24 @@ void fillpixelbypixel(uint16_t color) {
 void setup(void) {
   Serial.begin(9600);
   Serial.print("hello!");
-  tft.initDisplay();
+  tft.begin();
 
   Serial.println("init");
-  
   uint16_t time = millis();
   tft.fillScreen(BLACK);
   time = millis() - time;
   
   Serial.println(time, DEC);
   delay(500);
-  
+   
   lcdTestPattern();
   delay(1000);
   //
   tft.fillScreen(BLACK);
-  testdrawtext("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa, fringilla sed malesuada et, malesuada sit amet turpis. Sed porttitor neque ut ante pretium vitae malesuada nunc bibendum. Nullam aliquet ultrices massa eu hendrerit. Ut sed nisi lorem. In vestibulum purus a tortor imperdiet posuere. ", WHITE);
+  tft.setCursor(0,0);
+  tft.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa, fringilla sed malesuada et, malesuada sit amet turpis. Sed porttitor neque ut ante pretium vitae malesuada nunc bibendum. Nullam aliquet ultrices massa eu hendrerit. Ut sed nisi lorem. In vestibulum purus a tortor imperdiet posuere. ");
   delay(1000);
-  
+
   // tft print function!
   tftPrintTest();
   delay(2000);
@@ -94,7 +99,7 @@ void setup(void) {
   // optimized lines
   testfastlines(RED, BLUE);
   delay(500);    
-
+ 
   testdrawrects(GREEN);
   delay(1000);
 
@@ -111,8 +116,6 @@ void setup(void) {
   
   testtriangles();
   delay(500);
-  
-  while (1);
   
   Serial.println("done");
   delay(1000);
@@ -157,16 +160,25 @@ void testlines(uint16_t color) {
 }
 
 void testdrawtext(char *text, uint16_t color) {
-  tft.drawString(0, 0, text, color);
+  tft.setTextSize(1);
+  tft.setTextColor(WHITE);
+  tft.setCursor(0,0);
+
+  for (uint8_t i=0; i < 168; i++) {
+    if (i == '\n') continue;
+    tft.write(i);
+    if ((i > 0) && (i % 21 == 0))
+      tft.println();
+  }    
 }
 
 void testfastlines(uint16_t color1, uint16_t color2) {
    tft.fillScreen(BLACK);
    for (uint16_t y=0; y < tft.height()-1; y+=5) {
-     tft.drawHorizontalLine(0, y, tft.width()-1, color1);
+     tft.drawFastHLine(0, y, tft.width()-1, color1);
    }
    for (uint16_t x=0; x < tft.width()-1; x+=5) {
-     tft.drawVerticalLine(x, 0, tft.height()-1, color2);
+     tft.drawFastVLine(x, 0, tft.height()-1, color2);
    }
 }
 
@@ -246,9 +258,9 @@ void tftPrintTest() {
   tft.setTextColor(RED);  
   tft.setTextSize(1);
   tft.println("Hello World!");
-  tft.setTextColor(YELLOW);
+  tft.setTextColor(YELLOW, GREEN);
   tft.setTextSize(2);
-  tft.println("Hello World!");
+  tft.print("Hello Wo");
   tft.setTextColor(BLUE);
   tft.setTextSize(3);
   tft.print(1234.567);
@@ -260,12 +272,10 @@ void tftPrintTest() {
   tft.println("Hello World!");
   tft.setTextSize(1);
   tft.setTextColor(GREEN);
-  tft.print(p, 6);
+  tft.print(p, 5);
   tft.println(" Want pi?");
-  tft.println(" ");
   tft.print(8675309, HEX); // print 8,675,309 out in HEX!
-  tft.println(" Print HEX!");
-  tft.println(" ");
+  tft.print(" Print HEX");
   tft.setTextColor(WHITE);
   tft.println("Sketch has been");
   tft.println("running for: ");

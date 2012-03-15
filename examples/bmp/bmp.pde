@@ -14,8 +14,13 @@
 
   Written by Limor Fried/Ladyada for Adafruit Industries.  
   BSD license, all text above must be included in any redistribution
+
+  The Adafruit GFX Graphics core library is also required
+  https://github.com/adafruit/Adafruit-GFX-Library
+  Be sure to install it!
  ****************************************************/
 
+#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1331.h>
 #include <SD.h>
 #include <SPI.h>
@@ -54,26 +59,14 @@ int bmpWidth, bmpHeight;
 uint8_t bmpDepth, bmpImageoffset;
 
 
-void testtext(uint16_t color) {
-  tft.fillScreen(BLACK);
-  tft.setCursor(0, 20);
-  tft.setTextColor(color);
-  tft.setTextSize(1);
-  tft.println("Hello World!");
-  tft.setTextSize(1);
-  tft.println(1234.56);
-  tft.setTextSize(1);
-  tft.println(0xDEADBEEF, HEX);
-}
-
 void setup(void) {
   Serial.begin(9600);
    
   pinMode(cs, OUTPUT);
   digitalWrite(cs, HIGH);
      
-  // initialize a ST7735R TFT
-  tft.initDisplay();
+  // initialize the OLED
+  tft.begin();
 
   Serial.println("init");
   
@@ -117,16 +110,6 @@ void setup(void) {
 void loop() {
 }
 
-
-void testfastlines(uint16_t color1, uint16_t color2) {
-   tft.fillScreen(BLACK);
-   for (uint16_t y=0; y < tft.height(); y+=5) {
-     tft.drawHorizontalLine(0, y, tft.width(), color1);
-   }
-   for (uint16_t x=0; x < tft.width(); x+=5) {
-     tft.drawVerticalLine(x, 0, tft.height(), color2);
-   }
-}
 
 /*********************************************/
 // This procedure reads a bitmap and draws it to the screen
@@ -256,4 +239,3 @@ uint32_t read32(File f) {
   d |= b;
   return d;
 }
-
