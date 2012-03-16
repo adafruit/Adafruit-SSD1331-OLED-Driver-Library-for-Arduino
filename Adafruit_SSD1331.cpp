@@ -26,8 +26,6 @@
 
 inline void Adafruit_SSD1331::spiwrite(uint8_t c) {
     
-    //Serial.println(c, HEX);
-    
     if (!_sid) {
         SPI.transfer(c);
         return;
@@ -124,8 +122,28 @@ uint16_t Adafruit_SSD1331::Color565(uint8_t r, uint8_t g, uint8_t b) {
     @brief  Draws a filled rectangle using HW acceleration
 */
 /**************************************************************************/
+/*
 void Adafruit_SSD1331::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor) 
-{	
+{
+//Serial.println("fillRect");
+  // check rotation, move rect around if necessary
+  switch (getRotation()) {
+  case 1:
+    swap(x, y);
+    swap(w, h);
+    x = WIDTH - x - 1;
+    break;
+  case 2:
+    x = WIDTH - x - 1;
+    y = HEIGHT - y - 1;
+    break;
+  case 3:
+    swap(x, y);
+    swap(w, h);
+    y = HEIGHT - y - 1;
+    break;
+  }
+
   // Bounds check
   if ((x >= TFTWIDTH) || (y >= TFTHEIGHT))
 	return;
@@ -164,18 +182,31 @@ void Adafruit_SSD1331::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, 
   // Delay while the fill completes
   delay(SSD1331_DELAYS_HWFILL); 
 }
-
-void Adafruit_SSD1331::drawFastVLine(uint16_t x, uint16_t y, uint16_t h, uint16_t color) {
-  drawLine(x, y, x, y+h-1, color);
-  Serial.println('|');
-}
-
-void Adafruit_SSD1331::drawFastHLine(uint16_t x, uint16_t y, uint16_t w, uint16_t color) {
-  drawLine(x, y, x+w-1, y, color);
-  Serial.println('-');
-}
+*/
 
 void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {	
+  // check rotation, move pixel around if necessary
+  switch (getRotation()) {
+  case 1:
+    swap(x0, y0);
+    swap(x1, y1);
+    x0 = WIDTH - x0 - 1;
+    x1 = WIDTH - x1 - 1;
+    break;
+  case 2:
+    x0 = WIDTH - x0 - 1;
+    y0 = HEIGHT - y0 - 1;
+    x1 = WIDTH - x1 - 1;
+    y1 = HEIGHT - y1 - 1;
+    break;
+  case 3:
+    swap(x0, y0);
+    swap(x1, y1);
+    y0 = HEIGHT - y0 - 1;
+    y1 = HEIGHT - y1 - 1;
+    break;
+  }
+
   // Boundary check
   if ((y0 >= TFTHEIGHT) && (y1 >= TFTHEIGHT))
 	return;
@@ -202,14 +233,26 @@ void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, 
   delay(SSD1331_DELAYS_HWLINE);  
 }
 
-void Adafruit_SSD1331::fillScreen(uint16_t color) {
-	fillRect(0, 0, TFTWIDTH, TFTHEIGHT, color);
-}
-
 void Adafruit_SSD1331::drawPixel(uint16_t x, uint16_t y, uint16_t color)
 {
-  if ((x >= TFTWIDTH) || (y >= TFTHEIGHT)) return;
-  
+  if ((x >= width()) || (y >= height())) return;
+
+  // check rotation, move pixel around if necessary
+  switch (getRotation()) {
+  case 1:
+    swap(x, y);
+    x = WIDTH - x - 1;
+    break;
+  case 2:
+    x = WIDTH - x - 1;
+    y = HEIGHT - y - 1;
+    break;
+  case 3:
+    swap(x, y);
+    y = HEIGHT - y - 1;
+    break;
+  }
+
   goTo(x, y);
   
   // setup for data
@@ -258,49 +301,48 @@ void Adafruit_SSD1331::begin(void) {
         digitalWrite(_rst, HIGH);
         delay(500);
     }
-
-	// Initialization Sequence
-	writeCommand(SSD1331_CMD_DISPLAYOFF);  		// 0xAE
-	writeCommand(SSD1331_CMD_SETREMAP); 		// 0xA0
-	#if defined SSD1331_COLORORDER_RGB
-	writeCommand(0x72);							// RGB Color
-	#else
-	writeCommand(0x76);							// BGR Color
-	#endif
-	writeCommand(SSD1331_CMD_STARTLINE); 		// 0xA1
-	writeCommand(0x0);
-	writeCommand(SSD1331_CMD_DISPLAYOFFSET); 	// 0xA2
-	writeCommand(0x0);
-	writeCommand(SSD1331_CMD_NORMALDISPLAY);  	// 0xA4
-	writeCommand(SSD1331_CMD_SETMULTIPLEX); 	// 0xA8
-	writeCommand(0x3F);  						// 0x3F 1/64 duty
-	writeCommand(SSD1331_CMD_SETMASTER);  		// 0xAD
-	writeCommand(0x8E);
-	writeCommand(SSD1331_CMD_POWERMODE);  		// 0xB0
-	writeCommand(0x0B);
-	writeCommand(SSD1331_CMD_PRECHARGE);  		// 0xB1
-	writeCommand(0x31);
-	writeCommand(SSD1331_CMD_CLOCKDIV);  		// 0xB3
-	writeCommand(0xF0);  						// 7:4 = Oscillator Frequency, 3:0 = CLK Div Ratio (A[3:0]+1 = 1..16)
-	writeCommand(SSD1331_CMD_PRECHARGEA);  		// 0x8A
-	writeCommand(0x64);
-	writeCommand(SSD1331_CMD_PRECHARGEB);  		// 0x8B
-	writeCommand(0x78);
-	writeCommand(SSD1331_CMD_PRECHARGEA);  		// 0x8C
-	writeCommand(0x64);
-	writeCommand(SSD1331_CMD_PRECHARGELEVEL);  	// 0xBB
-	writeCommand(0x3A);
-	writeCommand(SSD1331_CMD_VCOMH);  			// 0xBE
-	writeCommand(0x3E);
-	writeCommand(SSD1331_CMD_MASTERCURRENT);  	// 0x87
-	writeCommand(0x06);
-	writeCommand(SSD1331_CMD_CONTRASTA);  		// 0x81
-	writeCommand(0x91);
-	writeCommand(SSD1331_CMD_CONTRASTB);  		// 0x82
-	writeCommand(0x50);
-	writeCommand(SSD1331_CMD_CONTRASTC);  		// 0x83
-	writeCommand(0x7D);
-	writeCommand(SSD1331_CMD_DISPLAYON);		//--turn on oled panel    
+    // Initialization Sequence
+    writeCommand(SSD1331_CMD_DISPLAYOFF);  	// 0xAE
+    writeCommand(SSD1331_CMD_SETREMAP); 	// 0xA0
+#if defined SSD1331_COLORORDER_RGB
+    writeCommand(0x72);				// RGB Color
+#else
+    writeCommand(0x76);				// BGR Color
+#endif
+    writeCommand(SSD1331_CMD_STARTLINE); 	// 0xA1
+    writeCommand(0x0);
+    writeCommand(SSD1331_CMD_DISPLAYOFFSET); 	// 0xA2
+    writeCommand(0x0);
+    writeCommand(SSD1331_CMD_NORMALDISPLAY);  	// 0xA4
+    writeCommand(SSD1331_CMD_SETMULTIPLEX); 	// 0xA8
+    writeCommand(0x3F);  			// 0x3F 1/64 duty
+    writeCommand(SSD1331_CMD_SETMASTER);  	// 0xAD
+    writeCommand(0x8E);
+    writeCommand(SSD1331_CMD_POWERMODE);  	// 0xB0
+    writeCommand(0x0B);
+    writeCommand(SSD1331_CMD_PRECHARGE);  	// 0xB1
+    writeCommand(0x31);
+    writeCommand(SSD1331_CMD_CLOCKDIV);  	// 0xB3
+    writeCommand(0xF0);  // 7:4 = Oscillator Frequency, 3:0 = CLK Div Ratio (A[3:0]+1 = 1..16)
+    writeCommand(SSD1331_CMD_PRECHARGEA);  	// 0x8A
+    writeCommand(0x64);
+    writeCommand(SSD1331_CMD_PRECHARGEB);  	// 0x8B
+    writeCommand(0x78);
+    writeCommand(SSD1331_CMD_PRECHARGEA);  	// 0x8C
+    writeCommand(0x64);
+    writeCommand(SSD1331_CMD_PRECHARGELEVEL);  	// 0xBB
+    writeCommand(0x3A);
+    writeCommand(SSD1331_CMD_VCOMH);  		// 0xBE
+    writeCommand(0x3E);
+    writeCommand(SSD1331_CMD_MASTERCURRENT);  	// 0x87
+    writeCommand(0x06);
+    writeCommand(SSD1331_CMD_CONTRASTA);  	// 0x81
+    writeCommand(0x91);
+    writeCommand(SSD1331_CMD_CONTRASTB);  	// 0x82
+    writeCommand(0x50);
+    writeCommand(SSD1331_CMD_CONTRASTC);  	// 0x83
+    writeCommand(0x7D);
+    writeCommand(SSD1331_CMD_DISPLAYON);	//--turn on oled panel    
 }
 
 /********************************* low level pin initialization */
@@ -312,12 +354,10 @@ Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs, uint8_t sid, uint8_t 
     _sclk = sclk;
     _rst = rst;
 
-    this->WIDTH = TFTWIDTH;
-    this->HEIGHT = TFTHEIGHT;
-    
-    cursor_y = cursor_x = 0;
-    textsize = 1;
-    textcolor = 0xFFFF;
+    // for reasons i cant determine, avr-g++ doesn't allow me
+    // to have a constructor in a superclass thats got a virtual
+    // function. would be great to fix it but for now we do it by hand
+    constructor(TFTWIDTH, TFTHEIGHT);
 }
 
 Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs,  uint8_t rst) {
@@ -327,12 +367,10 @@ Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs,  uint8_t rst) {
     _sclk = 0;
     _rst = rst;
 
-    this->WIDTH = TFTWIDTH;
-    this->HEIGHT = TFTHEIGHT;
-    
-    cursor_y = cursor_x = 0;
-    textsize = 1;
-    textcolor = 0xFFFF;
+    // for reasons i cant determine, avr-g++ doesn't allow me
+    // to have a constructor in a superclass thats got a virtual
+    // function. would be great to fix it but for now we do it by hand
+    constructor(TFTWIDTH, TFTHEIGHT);
 }
 
 

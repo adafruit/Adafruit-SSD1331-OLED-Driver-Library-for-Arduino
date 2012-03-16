@@ -64,7 +64,7 @@
 #define SSD1331_CMD_PRECHARGELEVEL 	0xBB
 #define SSD1331_CMD_VCOMH 			0xBE
 
-class Adafruit_SSD1331 : public Adafruit_GFX {
+class Adafruit_SSD1331 : public virtual Adafruit_GFX {
  public:
   Adafruit_SSD1331(uint8_t CS, uint8_t RS, uint8_t SID, uint8_t SCLK, uint8_t RST);
   Adafruit_SSD1331(uint8_t CS, uint8_t RS, uint8_t RST);
@@ -73,15 +73,8 @@ class Adafruit_SSD1331 : public Adafruit_GFX {
 
   // drawing primitives!
   void drawPixel(uint16_t x, uint16_t y, uint16_t color);
-  void fillScreen(uint16_t color);
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
-  void drawFastVLine(uint16_t x, uint16_t y, uint16_t h, uint16_t color);
-  void drawFastHLine(uint16_t x, uint16_t y, uint16_t w, uint16_t color);
-  //  void drawFastLine(uint16_t x0, uint16_t y0, uint16_t l, uint16_t color, uint8_t flag);
-  //void drawVerticalLine(uint16_t x0, uint16_t y0, uint16_t length, uint16_t color);
-  //  void drawHorizontalLine(uint16_t x0, uint16_t y0, uint16_t length, uint16_t color);
-  void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor);
-
+  //void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor);
 
   // commands
   void begin(void);

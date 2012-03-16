@@ -14,10 +14,6 @@
 
   Written by Limor Fried/Ladyada for Adafruit Industries.  
   BSD license, all text above must be included in any redistribution
-
-  The Adafruit GFX Graphics core library is also required
-  https://github.com/adafruit/Adafruit-GFX-Library
-  Be sure to install it!
  ****************************************************/
 
 
@@ -39,38 +35,29 @@
 #define YELLOW          0xFFE0  
 #define WHITE           0xFFFF
 
-#include "Adafruit_GFX.h"
+#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1331.h>
 #include <SPI.h>
 
 // Option 1: use any pins but a little slower
-Adafruit_SSD1331 tft = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
+Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
 
 // Option 2: must use the hardware SPI pins 
 // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be 
 // an output. This is much faster - also required if you want
 // to use the microSD card (see the image drawing example)
-//Adafruit_SSD1331 tft = Adafruit_SSD1331(cs, dc, rst);
+//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, rst);
 
 float p = 3.1415926;
-
-void fillpixelbypixel(uint16_t color) {
-  for (uint8_t x=0; x < tft.width(); x++) {
-    for (uint8_t y=0; y < tft.height(); y++) {
-      tft.drawPixel(x, y, color);
-    }
-  }
-  delay(100);
-}
 
 void setup(void) {
   Serial.begin(9600);
   Serial.print("hello!");
-  tft.begin();
+  display.begin();
 
   Serial.println("init");
   uint16_t time = millis();
-  tft.fillScreen(BLACK);
+  display.fillScreen(BLACK);
   time = millis() - time;
   
   Serial.println(time, DEC);
@@ -78,10 +65,10 @@ void setup(void) {
    
   lcdTestPattern();
   delay(1000);
-  //
-  tft.fillScreen(BLACK);
-  tft.setCursor(0,0);
-  tft.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa, fringilla sed malesuada et, malesuada sit amet turpis. Sed porttitor neque ut ante pretium vitae malesuada nunc bibendum. Nullam aliquet ultrices massa eu hendrerit. Ut sed nisi lorem. In vestibulum purus a tortor imperdiet posuere. ");
+  
+  display.fillScreen(BLACK);
+  display.setCursor(0,0);
+  display.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa");
   delay(1000);
 
   // tft print function!
@@ -89,7 +76,7 @@ void setup(void) {
   delay(2000);
   
   //a single pixel
-  tft.drawPixel(tft.width()/2, tft.height()/2, GREEN);
+  display.drawPixel(display.width()/2, display.height()/2, GREEN);
   delay(500);
   
   // line draw test
@@ -106,11 +93,11 @@ void setup(void) {
   testfillrects(YELLOW, MAGENTA);
   delay(1000);
 
-  tft.fillScreen(BLACK);
+  display.fillScreen(BLACK);
   testfillcircles(10, BLUE);
   testdrawcircles(10, WHITE);
   delay(1000);
-   
+
   testroundrects();
   delay(500);
   
@@ -125,104 +112,104 @@ void loop() {
 }
 
 void testlines(uint16_t color) {
-   tft.fillScreen(BLACK);
-   for (uint16_t x=0; x < tft.width()-1; x+=6) {
-     tft.drawLine(0, 0, x, tft.height()-1, color);
+   display.fillScreen(BLACK);
+   for (uint16_t x=0; x < display.width()-1; x+=6) {
+     display.drawLine(0, 0, x, display.height()-1, color);
    }
-   for (uint16_t y=0; y < tft.height()-1; y+=6) {
-     tft.drawLine(0, 0, tft.width()-1, y, color);
-   }
-   
-   tft.fillScreen(BLACK);
-   for (uint16_t x=0; x < tft.width()-1; x+=6) {
-     tft.drawLine(tft.width()-1, 0, x, tft.height()-1, color);
-   }
-   for (uint16_t y=0; y < tft.height()-1; y+=6) {
-     tft.drawLine(tft.width()-1, 0, 0, y, color);
+   for (uint16_t y=0; y < display.height()-1; y+=6) {
+     display.drawLine(0, 0, display.width()-1, y, color);
    }
    
-   tft.fillScreen(BLACK);
-   for (uint16_t x=0; x < tft.width()-1; x+=6) {
-     tft.drawLine(0, tft.height()-1, x, 0, color);
+   display.fillScreen(BLACK);
+   for (uint16_t x=0; x < display.width()-1; x+=6) {
+     display.drawLine(display.width()-1, 0, x, display.height()-1, color);
    }
-   for (uint16_t y=0; y < tft.height()-1; y+=6) {
-     tft.drawLine(0, tft.height()-1, tft.width()-1, y, color);
+   for (uint16_t y=0; y < display.height()-1; y+=6) {
+     display.drawLine(display.width()-1, 0, 0, y, color);
+   }
+   
+   display.fillScreen(BLACK);
+   for (uint16_t x=0; x < display.width()-1; x+=6) {
+     display.drawLine(0, display.height()-1, x, 0, color);
+   }
+   for (uint16_t y=0; y < display.height()-1; y+=6) {
+     display.drawLine(0, display.height()-1, display.width()-1, y, color);
    }
 
-   tft.fillScreen(BLACK);
-   for (uint16_t x=0; x < tft.width()-1; x+=6) {
-     tft.drawLine(tft.width()-1, tft.height()-1, x, 0, color);
+   display.fillScreen(BLACK);
+   for (uint16_t x=0; x < display.width()-1; x+=6) {
+     display.drawLine(display.width()-1, display.height()-1, x, 0, color);
    }
-   for (uint16_t y=0; y < tft.height()-1; y+=6) {
-     tft.drawLine(tft.width()-1, tft.height()-1, 0, y, color);
+   for (uint16_t y=0; y < display.height()-1; y+=6) {
+     display.drawLine(display.width()-1, display.height()-1, 0, y, color);
    }
    
 }
 
 void testdrawtext(char *text, uint16_t color) {
-  tft.setTextSize(1);
-  tft.setTextColor(WHITE);
-  tft.setCursor(0,0);
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
 
   for (uint8_t i=0; i < 168; i++) {
     if (i == '\n') continue;
-    tft.write(i);
+    display.write(i);
     if ((i > 0) && (i % 21 == 0))
-      tft.println();
+      display.println();
   }    
 }
 
 void testfastlines(uint16_t color1, uint16_t color2) {
-   tft.fillScreen(BLACK);
-   for (uint16_t y=0; y < tft.height()-1; y+=5) {
-     tft.drawFastHLine(0, y, tft.width()-1, color1);
+   display.fillScreen(BLACK);
+   for (uint16_t y=0; y < display.height()-1; y+=5) {
+     display.drawFastHLine(0, y, display.width()-1, color1);
    }
-   for (uint16_t x=0; x < tft.width()-1; x+=5) {
-     tft.drawFastVLine(x, 0, tft.height()-1, color2);
+   for (uint16_t x=0; x < display.width()-1; x+=5) {
+     display.drawFastVLine(x, 0, display.height()-1, color2);
    }
 }
 
 void testdrawrects(uint16_t color) {
- tft.fillScreen(BLACK);
- for (uint16_t x=0; x < tft.height()-1; x+=6) {
-   tft.drawRect((tft.width()-1)/2 -x/2, (tft.height()-1)/2 -x/2 , x, x, color);
+ display.fillScreen(BLACK);
+ for (uint16_t x=0; x < display.height()-1; x+=6) {
+   display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color);
  }
 }
 
 void testfillrects(uint16_t color1, uint16_t color2) {
- tft.fillScreen(BLACK);
- for (uint16_t x=tft.height()-1; x > 6; x-=6) {
-   tft.fillRect((tft.width()-1)/2 -x/2, (tft.height()-1)/2 -x/2 , x, x, color1);
-   tft.drawRect((tft.width()-1)/2 -x/2, (tft.height()-1)/2 -x/2 , x, x, color2);
+ display.fillScreen(BLACK);
+ for (uint16_t x=display.height()-1; x > 6; x-=6) {
+   display.fillRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color1);
+   display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color2);
  }
 }
 
 void testfillcircles(uint8_t radius, uint16_t color) {
-  for (uint8_t x=radius; x < tft.width()-1; x+=radius*2) {
-    for (uint8_t y=radius; y < tft.height()-1; y+=radius*2) {
-      tft.fillCircle(x, y, radius, color);
+  for (uint8_t x=radius; x < display.width()-1; x+=radius*2) {
+    for (uint8_t y=radius; y < display.height()-1; y+=radius*2) {
+      display.fillCircle(x, y, radius, color);
     }
   }  
 }
 
 void testdrawcircles(uint8_t radius, uint16_t color) {
-  for (uint8_t x=0; x < tft.width()-1+radius; x+=radius*2) {
-    for (uint8_t y=0; y < tft.height()-1+radius; y+=radius*2) {
-      tft.drawCircle(x, y, radius, color);
+  for (uint8_t x=0; x < display.width()-1+radius; x+=radius*2) {
+    for (uint8_t y=0; y < display.height()-1+radius; y+=radius*2) {
+      display.drawCircle(x, y, radius, color);
     }
   }  
 }
 
 void testtriangles() {
-  tft.fillScreen(BLACK);
+  display.fillScreen(BLACK);
   int color = 0xF800;
   int t;
-  int w = tft.width()/2;
-  int x = tft.height();
+  int w = display.width()/2;
+  int x = display.height();
   int y = 0;
-  int z = tft.width();
+  int z = display.width();
   for(t = 0 ; t <= 15; t+=1) {
-    tft.drawTriangle(w, y, y, x, z, x, color);
+    display.drawTriangle(w, y, y, x, z, x, color);
     x-=4;
     y+=4;
     z-=4;
@@ -231,17 +218,17 @@ void testtriangles() {
 }
 
 void testroundrects() {
-  tft.fillScreen(BLACK);
+  display.fillScreen(BLACK);
   int color = 100;
   int i;
   int t;
   for(t = 0 ; t <= 4; t+=1) {
   int x = 0;
   int y = 0;
-  int w = tft.width();
-  int h = tft.height();
+  int w = display.width();
+  int h = display.height();
     for(i = 0 ; i <= 24; i+=1) {
-    tft.drawRoundRect(x, y, w, h, 5, color);
+    display.drawRoundRect(x, y, w, h, 5, color);
     x+=2;
     y+=3;
     w-=4;
@@ -253,57 +240,57 @@ void testroundrects() {
 }
 
 void tftPrintTest() {
-  tft.fillScreen(BLACK);
-  tft.setCursor(0, 5);
-  tft.setTextColor(RED);  
-  tft.setTextSize(1);
-  tft.println("Hello World!");
-  tft.setTextColor(YELLOW, GREEN);
-  tft.setTextSize(2);
-  tft.print("Hello Wo");
-  tft.setTextColor(BLUE);
-  tft.setTextSize(3);
-  tft.print(1234.567);
+  display.fillScreen(BLACK);
+  display.setCursor(0, 5);
+  display.setTextColor(RED);  
+  display.setTextSize(1);
+  display.println("Hello World!");
+  display.setTextColor(YELLOW, GREEN);
+  display.setTextSize(2);
+  display.print("Hello Wo");
+  display.setTextColor(BLUE);
+  display.setTextSize(3);
+  display.print(1234.567);
   delay(1500);
-  tft.setCursor(0, 5);
-  tft.fillScreen(BLACK);
-  tft.setTextColor(WHITE);
-  tft.setTextSize(0);
-  tft.println("Hello World!");
-  tft.setTextSize(1);
-  tft.setTextColor(GREEN);
-  tft.print(p, 5);
-  tft.println(" Want pi?");
-  tft.print(8675309, HEX); // print 8,675,309 out in HEX!
-  tft.print(" Print HEX");
-  tft.setTextColor(WHITE);
-  tft.println("Sketch has been");
-  tft.println("running for: ");
-  tft.setTextColor(MAGENTA);
-  tft.print(millis() / 1000);
-  tft.setTextColor(WHITE);
-  tft.print(" seconds.");
+  display.setCursor(0, 5);
+  display.fillScreen(BLACK);
+  display.setTextColor(WHITE);
+  display.setTextSize(0);
+  display.println("Hello World!");
+  display.setTextSize(1);
+  display.setTextColor(GREEN);
+  display.print(p, 5);
+  display.println(" Want pi?");
+  display.print(8675309, HEX); // print 8,675,309 out in HEX!
+  display.print(" Print HEX");
+  display.setTextColor(WHITE);
+  display.println("Sketch has been");
+  display.println("running for: ");
+  display.setTextColor(MAGENTA);
+  display.print(millis() / 1000);
+  display.setTextColor(WHITE);
+  display.print(" seconds.");
 }
 
 void mediabuttons() {
  // play
-  tft.fillScreen(BLACK);
-  tft.fillRoundRect(25, 10, 78, 60, 8, WHITE);
-  tft.fillTriangle(42, 20, 42, 60, 90, 40, RED);
+  display.fillScreen(BLACK);
+  display.fillRoundRect(25, 10, 78, 60, 8, WHITE);
+  display.fillTriangle(42, 20, 42, 60, 90, 40, RED);
   delay(500);
   // pause
-  tft.fillRoundRect(25, 90, 78, 60, 8, WHITE);
-  tft.fillRoundRect(39, 98, 20, 45, 5, GREEN);
-  tft.fillRoundRect(69, 98, 20, 45, 5, GREEN);
+  display.fillRoundRect(25, 90, 78, 60, 8, WHITE);
+  display.fillRoundRect(39, 98, 20, 45, 5, GREEN);
+  display.fillRoundRect(69, 98, 20, 45, 5, GREEN);
   delay(500);
   // play color
-  tft.fillTriangle(42, 20, 42, 60, 90, 40, BLUE);
+  display.fillTriangle(42, 20, 42, 60, 90, 40, BLUE);
   delay(50);
   // pause color
-  tft.fillRoundRect(39, 98, 20, 45, 5, RED);
-  tft.fillRoundRect(69, 98, 20, 45, 5, RED);
+  display.fillRoundRect(39, 98, 20, 45, 5, RED);
+  display.fillRoundRect(69, 98, 20, 45, 5, RED);
   // play color
-  tft.fillTriangle(42, 20, 42, 60, 90, 40, GREEN);
+  display.fillTriangle(42, 20, 42, 60, 90, 40, GREEN);
 }
 
 /**************************************************************************/
@@ -314,20 +301,20 @@ void mediabuttons() {
 void lcdTestPattern(void)
 {
   uint32_t i,j;
-  tft.goTo(0, 0);
+  display.goTo(0, 0);
   
   for(i=0;i<64;i++)
   {
     for(j=0;j<96;j++)
     {
-      if(i>55){tft.writeData(WHITE>>8);tft.writeData(WHITE);}
-      else if(i>47){tft.writeData(BLUE>>8);tft.writeData(BLUE);}
-      else if(i>39){tft.writeData(GREEN>>8);tft.writeData(GREEN);}
-      else if(i>31){tft.writeData(CYAN>>8);tft.writeData(CYAN);}
-      else if(i>23){tft.writeData(RED>>8);tft.writeData(RED);}
-      else if(i>15){tft.writeData(MAGENTA>>8);tft.writeData(MAGENTA);}
-      else if(i>7){tft.writeData(YELLOW>>8);tft.writeData(YELLOW);}
-      else {tft.writeData(BLACK>>8);tft.writeData(BLACK);}
+      if(i>55){display.writeData(WHITE>>8);display.writeData(WHITE);}
+      else if(i>47){display.writeData(BLUE>>8);display.writeData(BLUE);}
+      else if(i>39){display.writeData(GREEN>>8);display.writeData(GREEN);}
+      else if(i>31){display.writeData(CYAN>>8);display.writeData(CYAN);}
+      else if(i>23){display.writeData(RED>>8);display.writeData(RED);}
+      else if(i>15){display.writeData(MAGENTA>>8);display.writeData(MAGENTA);}
+      else if(i>7){display.writeData(YELLOW>>8);display.writeData(YELLOW);}
+      else {display.writeData(BLACK>>8);display.writeData(BLACK);}
     }
   }
 }
