@@ -265,6 +265,18 @@ void Adafruit_SSD1331::drawPixel(uint16_t x, uint16_t y, uint16_t color)
   *portOutputRegister(csport) |= cspin;  
 }
 
+void Adafruit_SSD1331::pushColor(uint16_t color) {
+  // setup for data
+  *portOutputRegister(rsport) |= rspin;
+  *portOutputRegister(csport) &= ~ cspin;
+  
+  spiwrite(color >> 8);    
+  spiwrite(color);
+  
+  *portOutputRegister(csport) |= cspin; 
+}
+
+
 void Adafruit_SSD1331::begin(void) {
     // set pin directions
     pinMode(_rs, OUTPUT);

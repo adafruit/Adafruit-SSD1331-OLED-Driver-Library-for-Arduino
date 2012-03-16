@@ -75,6 +75,7 @@ class Adafruit_SSD1331 : public virtual Adafruit_GFX {
   void drawPixel(uint16_t x, uint16_t y, uint16_t color);
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
   //void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor);
+  void pushColor(uint16_t c);
 
   // commands
   void begin(void);
