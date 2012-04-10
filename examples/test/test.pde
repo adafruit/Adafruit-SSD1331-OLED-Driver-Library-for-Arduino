@@ -113,34 +113,34 @@ void loop() {
 
 void testlines(uint16_t color) {
    display.fillScreen(BLACK);
-   for (uint16_t x=0; x < display.width()-1; x+=6) {
+   for (int16_t x=0; x < display.width()-1; x+=6) {
      display.drawLine(0, 0, x, display.height()-1, color);
    }
-   for (uint16_t y=0; y < display.height()-1; y+=6) {
+   for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(0, 0, display.width()-1, y, color);
    }
    
    display.fillScreen(BLACK);
-   for (uint16_t x=0; x < display.width()-1; x+=6) {
+   for (int16_t x=0; x < display.width()-1; x+=6) {
      display.drawLine(display.width()-1, 0, x, display.height()-1, color);
    }
-   for (uint16_t y=0; y < display.height()-1; y+=6) {
+   for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(display.width()-1, 0, 0, y, color);
    }
    
    display.fillScreen(BLACK);
-   for (uint16_t x=0; x < display.width()-1; x+=6) {
+   for (int16_t x=0; x < display.width()-1; x+=6) {
      display.drawLine(0, display.height()-1, x, 0, color);
    }
-   for (uint16_t y=0; y < display.height()-1; y+=6) {
+   for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(0, display.height()-1, display.width()-1, y, color);
    }
 
    display.fillScreen(BLACK);
-   for (uint16_t x=0; x < display.width()-1; x+=6) {
+   for (int16_t x=0; x < display.width()-1; x+=6) {
      display.drawLine(display.width()-1, display.height()-1, x, 0, color);
    }
-   for (uint16_t y=0; y < display.height()-1; y+=6) {
+   for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(display.width()-1, display.height()-1, 0, y, color);
    }
    
@@ -161,24 +161,24 @@ void testdrawtext(char *text, uint16_t color) {
 
 void testfastlines(uint16_t color1, uint16_t color2) {
    display.fillScreen(BLACK);
-   for (uint16_t y=0; y < display.height()-1; y+=5) {
+   for (int16_t y=0; y < display.height()-1; y+=5) {
      display.drawFastHLine(0, y, display.width()-1, color1);
    }
-   for (uint16_t x=0; x < display.width()-1; x+=5) {
+   for (int16_t x=0; x < display.width()-1; x+=5) {
      display.drawFastVLine(x, 0, display.height()-1, color2);
    }
 }
 
 void testdrawrects(uint16_t color) {
  display.fillScreen(BLACK);
- for (uint16_t x=0; x < display.height()-1; x+=6) {
+ for (int16_t x=0; x < display.height()-1; x+=6) {
    display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color);
  }
 }
 
 void testfillrects(uint16_t color1, uint16_t color2) {
  display.fillScreen(BLACK);
- for (uint16_t x=display.height()-1; x > 6; x-=6) {
+ for (int16_t x=display.height()-1; x > 6; x-=6) {
    display.fillRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color1);
    display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color2);
  }
@@ -193,8 +193,8 @@ void testfillcircles(uint8_t radius, uint16_t color) {
 }
 
 void testdrawcircles(uint8_t radius, uint16_t color) {
-  for (uint8_t x=0; x < display.width()-1+radius; x+=radius*2) {
-    for (uint8_t y=0; y < display.height()-1+radius; y+=radius*2) {
+  for (int16_t x=0; x < display.width()-1+radius; x+=radius*2) {
+    for (int16_t y=0; y < display.height()-1+radius; y+=radius*2) {
       display.drawCircle(x, y, radius, color);
     }
   }  

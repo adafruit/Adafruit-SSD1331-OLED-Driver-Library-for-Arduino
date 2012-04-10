@@ -14,8 +14,6 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#define swap(a, b) { uint16_t t = a; a = b; b = t; }
-
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
@@ -72,9 +70,9 @@ class Adafruit_SSD1331 : public virtual Adafruit_GFX {
   uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
 
   // drawing primitives!
-  void drawPixel(uint16_t x, uint16_t y, uint16_t color);
+  void drawPixel(int16_t x, int16_t y, uint16_t color);
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
-  //void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor);
+  //void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t fillcolor);
   void pushColor(uint16_t c);
 
   // commands
@@ -89,8 +87,8 @@ class Adafruit_SSD1331 : public virtual Adafruit_GFX {
   void writeData(uint8_t d);
   void writeCommand(uint8_t c);
 
-  static const uint16_t TFTWIDTH = 96;
-  static const uint16_t TFTHEIGHT = 64;
+  static const int16_t TFTWIDTH = 96;
+  static const int16_t TFTHEIGHT = 64;
 
   void writeData_unsafe(uint16_t d);
 

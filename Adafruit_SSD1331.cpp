@@ -233,9 +233,9 @@ void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, 
   delay(SSD1331_DELAYS_HWLINE);  
 }
 
-void Adafruit_SSD1331::drawPixel(uint16_t x, uint16_t y, uint16_t color)
+void Adafruit_SSD1331::drawPixel(int16_t x, int16_t y, uint16_t color)
 {
-  if ((x >= width()) || (y >= height())) return;
+  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())) return;
 
   // check rotation, move pixel around if necessary
   switch (getRotation()) {
