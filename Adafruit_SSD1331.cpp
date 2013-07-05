@@ -359,63 +359,18 @@ void Adafruit_SSD1331::begin(void) {
 
 /********************************* low level pin initialization */
 
-Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs, uint8_t sid, uint8_t sclk, uint8_t rst) {
+Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs, uint8_t sid, uint8_t sclk, uint8_t rst) : Adafruit_GFX(TFTWIDTH, TFTHEIGHT) {
     _cs = cs;
     _rs = rs;
     _sid = sid;
     _sclk = sclk;
     _rst = rst;
-
-    // for reasons i cant determine, avr-g++ doesn't allow me
-    // to have a constructor in a superclass thats got a virtual
-    // function. would be great to fix it but for now we do it by hand
-    constructor(TFTWIDTH, TFTHEIGHT);
 }
 
-Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs,  uint8_t rst) {
+Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs, uint8_t rst) : Adafruit_GFX(TFTWIDTH, TFTHEIGHT) {
     _cs = cs;
     _rs = rs;
     _sid = 0;
     _sclk = 0;
     _rst = rst;
-
-    // for reasons i cant determine, avr-g++ doesn't allow me
-    // to have a constructor in a superclass thats got a virtual
-    // function. would be great to fix it but for now we do it by hand
-    constructor(TFTWIDTH, TFTHEIGHT);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
