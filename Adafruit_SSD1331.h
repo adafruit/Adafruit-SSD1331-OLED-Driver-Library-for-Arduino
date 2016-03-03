@@ -20,9 +20,7 @@
 #include "WProgram.h"
 #endif
 
-#ifndef swap
-#define swap(a, b) { uint16_t t = a; a = b; b = t; }
-#endif
+#define gfx_swap(a, b) { uint16_t t = a; a = b; b = t; }
 
 #ifdef __SAM3X8E__
 typedef volatile RwReg PortReg;

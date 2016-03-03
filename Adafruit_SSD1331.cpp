@@ -191,8 +191,8 @@ void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, 
   // check rotation, move pixel around if necessary
   switch (getRotation()) {
   case 1:
-    swap(x0, y0);
-    swap(x1, y1);
+    gfx_swap(x0, y0);
+    gfx_swap(x1, y1);
     x0 = WIDTH - x0 - 1;
     x1 = WIDTH - x1 - 1;
     break;
@@ -203,8 +203,8 @@ void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, 
     y1 = HEIGHT - y1 - 1;
     break;
   case 3:
-    swap(x0, y0);
-    swap(x1, y1);
+    gfx_swap(x0, y0);
+    gfx_swap(x1, y1);
     y0 = HEIGHT - y0 - 1;
     y1 = HEIGHT - y1 - 1;
     break;
@@ -243,7 +243,7 @@ void Adafruit_SSD1331::drawPixel(int16_t x, int16_t y, uint16_t color)
   // check rotation, move pixel around if necessary
   switch (getRotation()) {
   case 1:
-    swap(x, y);
+    gfx_swap(x, y);
     x = WIDTH - x - 1;
     break;
   case 2:
@@ -251,7 +251,7 @@ void Adafruit_SSD1331::drawPixel(int16_t x, int16_t y, uint16_t color)
     y = HEIGHT - y - 1;
     break;
   case 3:
-    swap(x, y);
+    gfx_swap(x, y);
     y = HEIGHT - y - 1;
     break;
   }
