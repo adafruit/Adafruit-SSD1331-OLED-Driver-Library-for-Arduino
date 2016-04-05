@@ -26,6 +26,9 @@
 typedef volatile RwReg PortReg;
 typedef uint32_t PortMask;
 #define _BV(b) (1<<(b))
+#elif defined(ESP8266) || defined(ARDUINO_STM32_FEATHER)
+typedef volatile uint32_t PortReg;
+typedef uint32_t PortMask;
 #else
 typedef volatile uint8_t PortReg;
 typedef uint8_t PortMask;
