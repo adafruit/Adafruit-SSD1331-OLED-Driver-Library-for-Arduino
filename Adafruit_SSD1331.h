@@ -26,7 +26,13 @@
 typedef volatile RwReg PortReg;
 typedef uint32_t PortMask;
 #define _BV(b) (1<<(b))
+
+#elif defined (__STM32F1__)
+typedef volatile uint32 PortReg;
+typedef uint32_t PortMask;
+#define _BV(b) (1<<(b))
 #else
+   
 typedef volatile uint8_t PortReg;
 typedef uint8_t PortMask;
 #endif
