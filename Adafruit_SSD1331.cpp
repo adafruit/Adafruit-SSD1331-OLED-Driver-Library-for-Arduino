@@ -39,24 +39,37 @@ inline void Adafruit_SSD1331::spiwrite(uint8_t c) {
         
     int8_t i;
     
+#if !defined(ESP8266)
     *sclkportreg |= sclkpin;
+#else
+    digitalWrite(_sclk, HIGH);
+#endif
     
     for (i=7; i>=0; i--) {
+#if !defined(ESP8266)
         *sclkportreg &= ~sclkpin;
-        //SCLK_PORT &= ~_BV(SCLK);
-        
+#else
+        digitalWrite(_sclk, LOW);
+#endif        
         if (c & _BV(i)) {
+#if !defined(ESP8266)
             *sidportreg |= sidpin;
-            //digitalWrite(_sid, HIGH);
-            //SID_PORT |= _BV(SID);
+#else
+            digitalWrite(_sid, HIGH);
+#endif
         } else {
+#if !defined(ESP8266)
             *sidportreg &= ~sidpin;
-            //digitalWrite(_sid, LOW);
-            //SID_PORT &= ~_BV(SID);
+#else
+            digitalWrite(_sid, LOW);
+#endif
         }
         
+#if !defined(ESP8266)
         *sclkportreg |= sclkpin;
-        //SCLK_PORT |= _BV(SCLK);
+#else
+        digitalWrite(_sclk, HIGH);
+#endif
     }
 }
 
@@ -315,11 +328,11 @@ void Adafruit_SSD1331::begin(void) {
     
     if (_sclk) {
         pinMode(_sclk, OUTPUT);
+        pinMode(_sid, OUTPUT);
 #if !defined(ESP8266)
         sclkportreg = portOutputRegister(digitalPinToPort(_sclk));
         sclkpin = digitalPinToBitMask(_sclk);
         
-        pinMode(_sid, OUTPUT);
         sidportreg = portOutputRegister(digitalPinToPort(_sid));
         sidpin = digitalPinToBitMask(_sid);
 #else
