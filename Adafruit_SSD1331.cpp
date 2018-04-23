@@ -343,7 +343,7 @@ void Adafruit_SSD1331::begin(void) {
     writeCommand(0x64);
     writeCommand(SSD1331_CMD_PRECHARGEB);  	// 0x8B
     writeCommand(0x78);
-    writeCommand(SSD1331_CMD_PRECHARGEA);  	// 0x8C
+    writeCommand(SSD1331_CMD_PRECHARGEC);  	// 0x8C
     writeCommand(0x64);
     writeCommand(SSD1331_CMD_PRECHARGELEVEL);  	// 0xBB
     writeCommand(0x3A);
