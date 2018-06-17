@@ -33,6 +33,7 @@
 inline void Adafruit_SSD1331::spiwrite(uint8_t c) {
     
     if (!_sid) {
+	SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE3));
         SPI.transfer(c);
         return;
     }
