@@ -127,7 +127,10 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(display.width()-1, 0, 0, y, color);
    }
-   
+
+   // To avoid ESP8266 watchdog timer resets when not using the hardware SPI pins
+   delay(0); 
+
    display.fillScreen(BLACK);
    for (int16_t x=0; x < display.width()-1; x+=6) {
      display.drawLine(0, display.height()-1, x, 0, color);
