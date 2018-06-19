@@ -14,22 +14,12 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SPITFT.h>
+#include <Adafruit_SPITFT_Macros.h>
 
-#define gfx_swap(a, b) { uint16_t t = a; a = b; b = t; }
-
-#ifdef __SAM3X8E__
-typedef volatile RwReg PortReg;
-typedef uint32_t PortMask;
-#define _BV(b) (1<<(b))
-#else
-typedef volatile uint8_t PortReg;
-typedef uint8_t PortMask;
-#endif
 
 // Select one of these defines to set the pixel color order
 #define SSD1331_COLORORDER_RGB
@@ -73,43 +63,19 @@ typedef uint8_t PortMask;
 #define SSD1331_CMD_PRECHARGELEVEL 	0xBB
 #define SSD1331_CMD_VCOMH 			0xBE
 
-class Adafruit_SSD1331 : public virtual Adafruit_GFX {
+class Adafruit_SSD1331 : public Adafruit_SPITFT {
  public:
-  Adafruit_SSD1331(uint8_t CS, uint8_t RS, uint8_t SID, uint8_t SCLK, uint8_t RST);
-  Adafruit_SSD1331(uint8_t CS, uint8_t RS, uint8_t RST);
-
-  uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
-
-  // drawing primitives!
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
-  void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
-  //void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t fillcolor);
-  void pushColor(uint16_t c);
+  Adafruit_SSD1331(uint8_t _CS, uint8_t _DC, uint8_t _MOSI, uint8_t _SCLK, uint8_t _RST);
+  Adafruit_SSD1331(uint8_t _CS, uint8_t _DC, uint8_t _RST);
 
   // commands
-  void begin(void);
-  void goHome(void);
-  void goTo(int x, int y);
+  void begin(uint32_t begin=2000000);
 
-  void reset(void);
-
-  /* low level */
-
-  void writeData(uint8_t d);
-  void writeCommand(uint8_t c);
+  void      setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+  uint8_t   readcommand8(uint8_t reg, uint8_t index = 0);
 
   static const int16_t TFTWIDTH = 96;
   static const int16_t TFTHEIGHT = 64;
 
-  void writeData_unsafe(uint16_t d);
-
-  void setWriteDir(void);
-  void write8(uint8_t d);
-
  private:
-  void spiwrite(uint8_t);
-
-  uint8_t _cs, _rs, _rst, _sid, _sclk;
-  PortReg *csportreg, *rsportreg, *sidportreg, *sclkportreg;
-  PortMask cspin, rspin, sidpin, sclkpin;
 };

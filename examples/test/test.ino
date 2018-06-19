@@ -16,6 +16,10 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1331.h>
+#include <SPI.h>
+
 
 // You can use any (4 or) 5 pins 
 #define sclk 13
@@ -35,18 +39,14 @@
 #define YELLOW          0xFFE0  
 #define WHITE           0xFFFF
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1331.h>
-#include <SPI.h>
-
 // Option 1: use any pins but a little slower
-Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
+//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
 
 // Option 2: must use the hardware SPI pins 
 // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be 
 // an output. This is much faster - also required if you want
 // to use the microSD card (see the image drawing example)
-//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, rst);
+Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, rst);
 
 float p = 3.1415926;
 
@@ -223,19 +223,19 @@ void testroundrects() {
   int i;
   int t;
   for(t = 0 ; t <= 4; t+=1) {
-  int x = 0;
-  int y = 0;
-  int w = display.width();
-  int h = display.height();
-    for(i = 0 ; i <= 24; i+=1) {
-    display.drawRoundRect(x, y, w, h, 5, color);
-    x+=2;
-    y+=3;
-    w-=4;
-    h-=6;
-    color+=1100;
-  }
-  color+=100;
+    int x = 0;
+    int y = 0;
+    int w = display.width();
+    int h = display.height();
+    for(i = 0 ; i <= 8; i+=1) {
+      display.drawRoundRect(x, y, w, h, 5, color);
+      x+=2;
+      y+=3;
+      w-=4;
+      h-=6;
+      color+=1100;
+    }
+    color+=100;
   }
 }
 
@@ -300,21 +300,22 @@ void mediabuttons() {
 /**************************************************************************/
 void lcdTestPattern(void)
 {
-  uint32_t i,j;
-  display.goTo(0, 0);
+  uint8_t w,h;
+  display.setAddrWindow(0, 0, 96, 64);
   
-  for(i=0;i<64;i++)
+  for(h=0; h<64; h++)
   {
-    for(j=0;j<96;j++)
+    for(w=0; w<96; w++)
     {
-      if(i>55){display.writeData(WHITE>>8);display.writeData(WHITE);}
-      else if(i>47){display.writeData(BLUE>>8);display.writeData(BLUE);}
-      else if(i>39){display.writeData(GREEN>>8);display.writeData(GREEN);}
-      else if(i>31){display.writeData(CYAN>>8);display.writeData(CYAN);}
-      else if(i>23){display.writeData(RED>>8);display.writeData(RED);}
-      else if(i>15){display.writeData(MAGENTA>>8);display.writeData(MAGENTA);}
-      else if(i>7){display.writeData(YELLOW>>8);display.writeData(YELLOW);}
-      else {display.writeData(BLACK>>8);display.writeData(BLACK);}
+      if(w>83){display.writePixel(WHITE);}
+      else if(w>71){display.writePixel(BLUE);}
+      else if(w>59){display.writePixel(GREEN);}
+      else if(w>47){display.writePixel(CYAN);}
+      else if(w>35){display.writePixel(RED);}
+      else if(w>23){display.writePixel(MAGENTA);}
+      else if(w>11){display.writePixel(YELLOW);}
+      else {display.writePixel(BLACK);}
     }
   }
+  display.endWrite();
 }
