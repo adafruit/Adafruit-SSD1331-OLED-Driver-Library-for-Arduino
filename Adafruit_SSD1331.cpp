@@ -39,55 +39,79 @@ inline void Adafruit_SSD1331::spiwrite(uint8_t c) {
         
     int8_t i;
     
+#if !defined(ESP8266)
     *sclkportreg |= sclkpin;
+#else
+    digitalWrite(_sclk, HIGH);
+#endif
     
     for (i=7; i>=0; i--) {
+#if !defined(ESP8266)
         *sclkportreg &= ~sclkpin;
-        //SCLK_PORT &= ~_BV(SCLK);
-        
+#else
+        digitalWrite(_sclk, LOW);
+#endif        
         if (c & _BV(i)) {
+#if !defined(ESP8266)
             *sidportreg |= sidpin;
-            //digitalWrite(_sid, HIGH);
-            //SID_PORT |= _BV(SID);
+#else
+            digitalWrite(_sid, HIGH);
+#endif
         } else {
+#if !defined(ESP8266)
             *sidportreg &= ~sidpin;
-            //digitalWrite(_sid, LOW);
-            //SID_PORT &= ~_BV(SID);
+#else
+            digitalWrite(_sid, LOW);
+#endif
         }
         
+#if !defined(ESP8266)
         *sclkportreg |= sclkpin;
-        //SCLK_PORT |= _BV(SCLK);
+#else
+        digitalWrite(_sclk, HIGH);
+#endif
     }
 }
 
 
 void Adafruit_SSD1331::writeCommand(uint8_t c) {
+#if !defined(ESP8266)
     *rsportreg &= ~ rspin;
-    //digitalWrite(_rs, LOW);
-    
     *csportreg &= ~ cspin;
-    //digitalWrite(_cs, LOW);
-    
+#else
+    digitalWrite(_rs, LOW);
+    digitalWrite(_cs, LOW);
+#endif
+
     //Serial.print("C ");
     spiwrite(c);
     
+#if !defined(ESP8266)
     *csportreg |= cspin;
-    //digitalWrite(_cs, HIGH);
+#else
+    digitalWrite(_cs, HIGH);
+#endif
 }
 
 
 void Adafruit_SSD1331::writeData(uint8_t c) {
+#if !defined(ESP8266)
     *rsportreg |= rspin;
-    //digitalWrite(_rs, HIGH);
-    
     *csportreg &= ~ cspin;
-    //digitalWrite(_cs, LOW);
+#else
+    digitalWrite(_rs, HIGH);
+    digitalWrite(_cs, LOW);
+#endif
+
     
     //Serial.print("D ");
     spiwrite(c);
     
+#if !defined(ESP8266)
     *csportreg |= cspin;
-    //digitalWrite(_cs, HIGH);
+#else
+    digitalWrite(_cs, HIGH);
+#endif
 } 
 
 /***********************************/
@@ -259,24 +283,42 @@ void Adafruit_SSD1331::drawPixel(int16_t x, int16_t y, uint16_t color)
   goTo(x, y);
   
   // setup for data
+#if !defined(ESP8266)
   *rsportreg |= rspin;
   *csportreg &= ~ cspin;
-  
+#else
+  digitalWrite(_rs, HIGH);
+  digitalWrite(_cs, LOW);
+#endif
+
   spiwrite(color >> 8);    
   spiwrite(color);
-  
-  *csportreg |= cspin;  
+
+#if !defined(ESP8266)
+  *csportreg |= cspin;
+#else
+   digitalWrite(_cs, HIGH);
+#endif  
 }
 
 void Adafruit_SSD1331::pushColor(uint16_t color) {
   // setup for data
+#if !defined(ESP8266)
   *rsportreg |= rspin;
   *csportreg &= ~ cspin;
+#else
+  digitalWrite(_rs, HIGH);
+  digitalWrite(_cs, LOW);
+#endif
   
   spiwrite(color >> 8);    
   spiwrite(color);
-  
-  *csportreg |= cspin; 
+
+#if !defined(ESP8266)  
+  *csportreg |= cspin;
+#else
+  digitalWrite(_cs, HIGH);
+#endif 
 }
 
 
@@ -286,12 +328,15 @@ void Adafruit_SSD1331::begin(void) {
     
     if (_sclk) {
         pinMode(_sclk, OUTPUT);
+        pinMode(_sid, OUTPUT);
+#if !defined(ESP8266)
         sclkportreg = portOutputRegister(digitalPinToPort(_sclk));
         sclkpin = digitalPinToBitMask(_sclk);
         
-        pinMode(_sid, OUTPUT);
         sidportreg = portOutputRegister(digitalPinToPort(_sid));
         sidpin = digitalPinToBitMask(_sid);
+#else
+#endif
     } else {
         // using the hardware SPI
         SPI.begin();
@@ -301,12 +346,14 @@ void Adafruit_SSD1331::begin(void) {
     // Toggle RST low to reset; CS low so it'll listen to us
     pinMode(_cs, OUTPUT);
     digitalWrite(_cs, LOW);
+#if !defined(ESP8266)
     cspin = digitalPinToBitMask(_cs);
     csportreg = portOutputRegister(digitalPinToPort(_cs));
     
     rspin = digitalPinToBitMask(_rs);
     rsportreg = portOutputRegister(digitalPinToPort(_rs));
-    
+#else
+#endif
     if (_rst) {
         pinMode(_rst, OUTPUT);
         digitalWrite(_rst, HIGH);
