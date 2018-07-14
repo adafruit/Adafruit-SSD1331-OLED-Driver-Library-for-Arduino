@@ -69,7 +69,7 @@ class Adafruit_SSD1331 : public Adafruit_SPITFT {
   Adafruit_SSD1331(uint8_t _CS, uint8_t _DC, uint8_t _RST);
 
   // commands
-  void begin(uint32_t begin=2000000);
+  void begin(uint32_t begin=8000000);
 
   void      setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   uint8_t   readcommand8(uint8_t reg, uint8_t index = 0);
