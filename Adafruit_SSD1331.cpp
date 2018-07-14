@@ -14,308 +14,60 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#include "Adafruit_GFX.h"
 #include "Adafruit_SSD1331.h"
-#include "glcdfont.c"
-
-#ifdef __AVR
-  #include <avr/pgmspace.h>
-#elif defined(ESP8266)
-  #include <pgmspace.h>
-#endif
-
 #include "pins_arduino.h"
 #include "wiring_private.h"
-#include <SPI.h>
-
-/********************************** low level pin interface */
-
-inline void Adafruit_SSD1331::spiwrite(uint8_t c) {
-    
-    if (!_sid) {
-        SPI.transfer(c);
-        return;
-    }
-        
-    int8_t i;
-    
-    *sclkportreg |= sclkpin;
-    
-    for (i=7; i>=0; i--) {
-        *sclkportreg &= ~sclkpin;
-        //SCLK_PORT &= ~_BV(SCLK);
-        
-        if (c & _BV(i)) {
-            *sidportreg |= sidpin;
-            //digitalWrite(_sid, HIGH);
-            //SID_PORT |= _BV(SID);
-        } else {
-            *sidportreg &= ~sidpin;
-            //digitalWrite(_sid, LOW);
-            //SID_PORT &= ~_BV(SID);
-        }
-        
-        *sclkportreg |= sclkpin;
-        //SCLK_PORT |= _BV(SCLK);
-    }
-}
-
-
-void Adafruit_SSD1331::writeCommand(uint8_t c) {
-    *rsportreg &= ~ rspin;
-    //digitalWrite(_rs, LOW);
-    
-    *csportreg &= ~ cspin;
-    //digitalWrite(_cs, LOW);
-    
-    //Serial.print("C ");
-    spiwrite(c);
-    
-    *csportreg |= cspin;
-    //digitalWrite(_cs, HIGH);
-}
-
-
-void Adafruit_SSD1331::writeData(uint8_t c) {
-    *rsportreg |= rspin;
-    //digitalWrite(_rs, HIGH);
-    
-    *csportreg &= ~ cspin;
-    //digitalWrite(_cs, LOW);
-    
-    //Serial.print("D ");
-    spiwrite(c);
-    
-    *csportreg |= cspin;
-    //digitalWrite(_cs, HIGH);
-} 
 
 /***********************************/
 
-void Adafruit_SSD1331::goHome(void) {
-  goTo(0,0);
-}
 
-void Adafruit_SSD1331::goTo(int x, int y) {
-  if ((x >= WIDTH) || (y >= HEIGHT)) return;
-  
-  // set x and y coordinate
-  writeCommand(SSD1331_CMD_SETCOLUMN);
-  writeCommand(x);
-  writeCommand(WIDTH-1);
+void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
 
-  writeCommand(SSD1331_CMD_SETROW);
-  writeCommand(y);
-  writeCommand(HEIGHT-1);
-}
+  uint8_t x1 = x;
+  uint8_t y1 = y;
+  if (x1 > 95) x1 = 95;
+  if (y1 > 63) y1 = 63;
 
-uint16_t Adafruit_SSD1331::Color565(uint8_t r, uint8_t g, uint8_t b) {
-  uint16_t c;
-  c = r >> 3;
-  c <<= 6;
-  c |= g >> 2;
-  c <<= 5;
-  c |= b >> 3;
+  uint8_t x2 = (x+w-1);
+  uint8_t y2 = (y+h-1);
+  if (x2 > 95) x2 = 95;
+  if (y2 > 63) y2 = 63;
 
-  return c;
-}
-
-/**************************************************************************/
-/*! 
-    @brief  Draws a filled rectangle using HW acceleration
-*/
-/**************************************************************************/
-/*
-void Adafruit_SSD1331::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t fillcolor) 
-{
-//Serial.println("fillRect");
-  // check rotation, move rect around if necessary
-  switch (getRotation()) {
-  case 1:
-    swap(x, y);
-    swap(w, h);
-    x = WIDTH - x - 1;
-    break;
-  case 2:
-    x = WIDTH - x - 1;
-    y = HEIGHT - y - 1;
-    break;
-  case 3:
-    swap(x, y);
-    swap(w, h);
-    y = HEIGHT - y - 1;
-    break;
+  if (x1 > x2) {
+    uint8_t t = x2;
+    x2 = x1;
+    x1 = t;
+  }
+  if (y1 > y2) {
+    uint8_t t = y2;
+    y2 = y1;
+    y1 = t;
   }
 
-  // Bounds check
-  if ((x >= TFTWIDTH) || (y >= TFTHEIGHT))
-	return;
 
-  // Y bounds check
-  if (y+h > TFTHEIGHT)
-  {
-    h = TFTHEIGHT - y;
-  }
-
-  // X bounds check
-  if (x+w > TFTWIDTH)
-  {
-    w = TFTWIDTH - x;
-  }
-  
-  // fill!
-  writeCommand(SSD1331_CMD_FILL);
-  writeCommand(0x01);
-
-  writeCommand(SSD1331_CMD_DRAWRECT);
-  writeCommand(x & 0xFF);							// Starting column
-  writeCommand(y & 0xFF);							// Starting row
-  writeCommand((x+w-1) & 0xFF);	// End column
-  writeCommand((y+h-1) & 0xFF);	// End row
-  
-  // Outline color
-  writeCommand((uint8_t)((fillcolor >> 11) << 1));
-  writeCommand((uint8_t)((fillcolor >> 5) & 0x3F));
-  writeCommand((uint8_t)((fillcolor << 1) & 0x3F));
-  // Fill color
-  writeCommand((uint8_t)((fillcolor >> 11) << 1));
-  writeCommand((uint8_t)((fillcolor >> 5) & 0x3F));
-  writeCommand((uint8_t)((fillcolor << 1) & 0x3F));
- 
-  // Delay while the fill completes
-  delay(SSD1331_DELAYS_HWFILL); 
-}
-*/
-
-void Adafruit_SSD1331::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {	
-  // check rotation, move pixel around if necessary
-  switch (getRotation()) {
-  case 1:
-    gfx_swap(x0, y0);
-    gfx_swap(x1, y1);
-    x0 = WIDTH - x0 - 1;
-    x1 = WIDTH - x1 - 1;
-    break;
-  case 2:
-    x0 = WIDTH - x0 - 1;
-    y0 = HEIGHT - y0 - 1;
-    x1 = WIDTH - x1 - 1;
-    y1 = HEIGHT - y1 - 1;
-    break;
-  case 3:
-    gfx_swap(x0, y0);
-    gfx_swap(x1, y1);
-    y0 = HEIGHT - y0 - 1;
-    y1 = HEIGHT - y1 - 1;
-    break;
-  }
-
-  // Boundary check
-  if ((y0 >= TFTHEIGHT) && (y1 >= TFTHEIGHT))
-	return;
-  if ((x0 >= TFTWIDTH) && (x1 >= TFTWIDTH))
-	return;	
-  if (x0 >= TFTWIDTH)
-    x0 = TFTWIDTH - 1;
-  if (y0 >= TFTHEIGHT)
-    y0 = TFTHEIGHT - 1;
-  if (x1 >= TFTWIDTH)
-    x1 = TFTWIDTH - 1;
-  if (y1 >= TFTHEIGHT)
-    y1 = TFTHEIGHT - 1;
-  
-  writeCommand(SSD1331_CMD_DRAWLINE);
-  writeCommand(x0);
-  writeCommand(y0);
+  startWrite();
+  writeCommand(0x15); // Column addr set
   writeCommand(x1);
+  writeCommand(x2);
+  endWrite();
+
+  startWrite();
+  writeCommand(0x75); // Column addr set
   writeCommand(y1);
-  delay(SSD1331_DELAYS_HWLINE);  
-  writeCommand((uint8_t)((color >> 11) << 1));
-  writeCommand((uint8_t)((color >> 5) & 0x3F));
-  writeCommand((uint8_t)((color << 1) & 0x3F));
-  delay(SSD1331_DELAYS_HWLINE);  
-}
+  writeCommand(y2);
+  endWrite();
 
-void Adafruit_SSD1331::drawPixel(int16_t x, int16_t y, uint16_t color)
-{
-  if ((x < 0) || (x >= width()) || (y < 0) || (y >= height())) return;
+  startWrite();
 
-  // check rotation, move pixel around if necessary
-  switch (getRotation()) {
-  case 1:
-    gfx_swap(x, y);
-    x = WIDTH - x - 1;
-    break;
-  case 2:
-    x = WIDTH - x - 1;
-    y = HEIGHT - y - 1;
-    break;
-  case 3:
-    gfx_swap(x, y);
-    y = HEIGHT - y - 1;
-    break;
-  }
-
-  goTo(x, y);
-  
-  // setup for data
-  *rsportreg |= rspin;
-  *csportreg &= ~ cspin;
-  
-  spiwrite(color >> 8);    
-  spiwrite(color);
-  
-  *csportreg |= cspin;  
-}
-
-void Adafruit_SSD1331::pushColor(uint16_t color) {
-  // setup for data
-  *rsportreg |= rspin;
-  *csportreg &= ~ cspin;
-  
-  spiwrite(color >> 8);    
-  spiwrite(color);
-  
-  *csportreg |= cspin; 
 }
 
 
-void Adafruit_SSD1331::begin(void) {
-    // set pin directions
-    pinMode(_rs, OUTPUT);
-    
-    if (_sclk) {
-        pinMode(_sclk, OUTPUT);
-        sclkportreg = portOutputRegister(digitalPinToPort(_sclk));
-        sclkpin = digitalPinToBitMask(_sclk);
-        
-        pinMode(_sid, OUTPUT);
-        sidportreg = portOutputRegister(digitalPinToPort(_sid));
-        sidpin = digitalPinToBitMask(_sid);
-    } else {
-        // using the hardware SPI
-        SPI.begin();
-        SPI.setDataMode(SPI_MODE3);
-    }
-	
-    // Toggle RST low to reset; CS low so it'll listen to us
-    pinMode(_cs, OUTPUT);
-    digitalWrite(_cs, LOW);
-    cspin = digitalPinToBitMask(_cs);
-    csportreg = portOutputRegister(digitalPinToPort(_cs));
-    
-    rspin = digitalPinToBitMask(_rs);
-    rsportreg = portOutputRegister(digitalPinToPort(_rs));
-    
-    if (_rst) {
-        pinMode(_rst, OUTPUT);
-        digitalWrite(_rst, HIGH);
-        delay(500);
-        digitalWrite(_rst, LOW);
-        delay(500);
-        digitalWrite(_rst, HIGH);
-        delay(500);
-    }
+
+void Adafruit_SSD1331::begin(uint32_t freq) {
+    initSPI(freq);
+
+    startWrite();
+
     // Initialization Sequence
     writeCommand(SSD1331_CMD_DISPLAYOFF);  	// 0xAE
     writeCommand(SSD1331_CMD_SETREMAP); 	// 0xA0
@@ -357,23 +109,18 @@ void Adafruit_SSD1331::begin(void) {
     writeCommand(0x50);
     writeCommand(SSD1331_CMD_CONTRASTC);  	// 0x83
     writeCommand(0x7D);
-    writeCommand(SSD1331_CMD_DISPLAYON);	//--turn on oled panel    
+    writeCommand(SSD1331_CMD_DISPLAYON);	//--turn on oled panel   
+
+    endWrite(); 
+    _width  = TFTWIDTH;
+    _height = TFTHEIGHT;
 }
 
 /********************************* low level pin initialization */
 
-Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs, uint8_t sid, uint8_t sclk, uint8_t rst) : Adafruit_GFX(TFTWIDTH, TFTHEIGHT) {
-    _cs = cs;
-    _rs = rs;
-    _sid = sid;
-    _sclk = sclk;
-    _rst = rst;
+Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t dc, uint8_t mosi, uint8_t sclk, uint8_t rst) :  Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, mosi, sclk, rst, -1) {
 }
 
-Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t rs, uint8_t rst) : Adafruit_GFX(TFTWIDTH, TFTHEIGHT) {
-    _cs = cs;
-    _rs = rs;
-    _sid = 0;
-    _sclk = 0;
-    _rst = rst;
+Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t dc, uint8_t rst) : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
+
 }
