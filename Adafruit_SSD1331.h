@@ -60,6 +60,7 @@
 #define SSD1331_CMD_PRECHARGELEVEL 	0xBB
 #define SSD1331_CMD_VCOMH 			0xBE
 
+/// Class to manage hardware interface with SSD1331 chipset
 class Adafruit_SSD1331 : public Adafruit_SPITFT {
  public:
   Adafruit_SSD1331(uint8_t _CS, uint8_t _DC, uint8_t _MOSI, uint8_t _SCLK, uint8_t _RST);
@@ -69,10 +70,9 @@ class Adafruit_SSD1331 : public Adafruit_SPITFT {
   void begin(uint32_t begin=8000000);
 
   void      setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
-  uint8_t   readcommand8(uint8_t reg, uint8_t index = 0);
 
-  static const int16_t TFTWIDTH = 96;
-  static const int16_t TFTHEIGHT = 64;
+  static const int16_t TFTWIDTH = 96;    ///< The width of the display
+  static const int16_t TFTHEIGHT = 64;   ///< The height of the display
 
  private:
 };

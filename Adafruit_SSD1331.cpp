@@ -21,6 +21,13 @@
 /***********************************/
 
 
+/*!
+  @brief   SPI displays set an address window rectangle for blitting pixels
+  @param  x  Top left corner x coordinate
+  @param  y  Top left corner x coordinate
+  @param  w  Width of window
+  @param  h  Height of window
+*/
 void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
 
   uint8_t x1 = x;
@@ -62,7 +69,13 @@ void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_
 }
 
 
-
+/**************************************************************************/
+/*!
+    @brief   Initialize SSD1331 chip
+    Connects to the SSD1331 over SPI and sends initialization procedure commands
+    @param    freq  Desired SPI clock frequency
+*/
+/**************************************************************************/
 void Adafruit_SSD1331::begin(uint32_t freq) {
     initSPI(freq);
 
@@ -116,11 +129,30 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
     _height = TFTHEIGHT;
 }
 
-/********************************* low level pin initialization */
 
+
+
+/**************************************************************************/
+/*!
+    @brief  Instantiate Adafruit ILI9341 driver with software SPI
+    @param    cs    Chip select pin #
+    @param    dc    Data/Command pin #
+    @param    mosi  SPI MOSI pin #
+    @param    sclk  SPI Clock pin #
+    @param    rst   Reset pin # (optional, pass -1 if unused)
+*/
+/**************************************************************************/
 Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t dc, uint8_t mosi, uint8_t sclk, uint8_t rst) :  Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, mosi, sclk, rst, -1) {
 }
 
+/**************************************************************************/
+/*!
+    @brief  Instantiate Adafruit ILI9341 driver with hardware SPI
+    @param    cs    Chip select pin #
+    @param    dc    Data/Command pin #
+    @param    rst   Reset pin # (optional, pass -1 if unused)
+*/
+/**************************************************************************/
 Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t dc, uint8_t rst) : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
 
 }
