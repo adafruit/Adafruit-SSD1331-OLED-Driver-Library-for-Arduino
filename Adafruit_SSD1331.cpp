@@ -1,16 +1,16 @@
-/*************************************************** 
+/***************************************************
   This is a library for the 0.96" 16-bit Color OLED with SSD1331 driver chip
 
   Pick one up today in the adafruit shop!
   ------> http://www.adafruit.com/products/684
 
-  These displays use SPI to communicate, 4 or 5 pins are required to  
+  These displays use SPI to communicate, 4 or 5 pins are required to
   interface
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
   products from Adafruit!
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  Written by Limor Fried/Ladyada for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
@@ -87,7 +87,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
 #if defined SSD1331_COLORORDER_RGB
     writeCommand(0x72);				// RGB Color
 #else
-    //writeCommand(0x76);				// BGR Color
+    writeCommand(0x76);				// BGR Color
 #endif
     writeCommand(SSD1331_CMD_STARTLINE); 	// 0xA1
     writeCommand(0x0);
@@ -122,9 +122,9 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
     writeCommand(0x50);
     writeCommand(SSD1331_CMD_CONTRASTC);  	// 0x83
     writeCommand(0x7D);
-    writeCommand(SSD1331_CMD_DISPLAYON);	//--turn on oled panel   
+    writeCommand(SSD1331_CMD_DISPLAYON);	//--turn on oled panel
 
-    endWrite(); 
+    endWrite();
     _width  = TFTWIDTH;
     _height = TFTHEIGHT;
 }
@@ -156,4 +156,3 @@ Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t dc, uint8_t mosi, uint8_t
 Adafruit_SSD1331::Adafruit_SSD1331(uint8_t cs, uint8_t dc, uint8_t rst) : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
 
 }
-
