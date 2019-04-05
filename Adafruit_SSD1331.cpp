@@ -87,7 +87,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
 #if defined SSD1331_COLORORDER_RGB
     writeCommand(0x72);				// RGB Color
 #else
-    writeCommand(0x76);				// BGR Color
+    //writeCommand(0x76);				// BGR Color
 #endif
     writeCommand(SSD1331_CMD_STARTLINE); 	// 0xA1
     writeCommand(0x0);
@@ -108,7 +108,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
     writeCommand(0x64);
     writeCommand(SSD1331_CMD_PRECHARGEB);  	// 0x8B
     writeCommand(0x78);
-    writeCommand(SSD1331_CMD_PRECHARGEA);  	// 0x8C
+    writeCommand(SSD1331_CMD_PRECHARGEC);  	// 0x8C
     writeCommand(0x64);
     writeCommand(SSD1331_CMD_PRECHARGELEVEL);  	// 0xBB
     writeCommand(0x3A);

@@ -1,18 +1,18 @@
-/*************************************************** 
+/***************************************************
   This is a example sketch demonstrating the graphics
-  capabilities of the SSD1331 library  for the 0.96" 
+  capabilities of the SSD1331 library  for the 0.96"
   16-bit Color OLED with SSD1331 driver chip
 
   Pick one up today in the adafruit shop!
   ------> http://www.adafruit.com/products/684
 
-  These displays use SPI to communicate, 4 or 5 pins are required to  
+  These displays use SPI to communicate, 4 or 5 pins are required to
   interface
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
   products from Adafruit!
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  Written by Limor Fried/Ladyada for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
@@ -21,7 +21,7 @@
 #include <SPI.h>
 
 
-// You can use any (4 or) 5 pins 
+// You can use any (4 or) 5 pins
 #define sclk 13
 #define mosi 11
 #define cs   10
@@ -36,14 +36,14 @@
 #define	GREEN           0x07E0
 #define CYAN            0x07FF
 #define MAGENTA         0xF81F
-#define YELLOW          0xFFE0  
+#define YELLOW          0xFFE0
 #define WHITE           0xFFFF
 
 // Option 1: use any pins but a little slower
-//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);  
+//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);
 
-// Option 2: must use the hardware SPI pins 
-// (for UNO thats sclk = 13 and sid = 11) and pin 10 must be 
+// Option 2: must use the hardware SPI pins
+// (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
 // an output. This is much faster - also required if you want
 // to use the microSD card (see the image drawing example)
 Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, rst);
@@ -59,13 +59,13 @@ void setup(void) {
   uint16_t time = millis();
   display.fillScreen(BLACK);
   time = millis() - time;
-  
+
   Serial.println(time, DEC);
   delay(500);
-   
+
   lcdTestPattern();
   delay(1000);
-  
+
   display.fillScreen(BLACK);
   display.setCursor(0,0);
   display.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa");
@@ -74,19 +74,19 @@ void setup(void) {
   // tft print function!
   tftPrintTest();
   delay(2000);
-  
+
   //a single pixel
   display.drawPixel(display.width()/2, display.height()/2, GREEN);
   delay(500);
-  
+
   // line draw test
   testlines(YELLOW);
-  delay(500);    
-  
+  delay(500);
+
   // optimized lines
   testfastlines(RED, BLUE);
-  delay(500);    
- 
+  delay(500);
+
   testdrawrects(GREEN);
   delay(1000);
 
@@ -100,10 +100,10 @@ void setup(void) {
 
   testroundrects();
   delay(500);
-  
+
   testtriangles();
   delay(500);
-  
+
   Serial.println("done");
   delay(1000);
 }
@@ -119,7 +119,7 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(0, 0, display.width()-1, y, color);
    }
-   
+
    display.fillScreen(BLACK);
    for (int16_t x=0; x < display.width()-1; x+=6) {
      display.drawLine(display.width()-1, 0, x, display.height()-1, color);
@@ -129,7 +129,7 @@ void testlines(uint16_t color) {
    }
 
    // To avoid ESP8266 watchdog timer resets when not using the hardware SPI pins
-   delay(0); 
+   delay(0);
 
    display.fillScreen(BLACK);
    for (int16_t x=0; x < display.width()-1; x+=6) {
@@ -146,7 +146,7 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(display.width()-1, display.height()-1, 0, y, color);
    }
-   
+
 }
 
 void testdrawtext(char *text, uint16_t color) {
@@ -159,7 +159,7 @@ void testdrawtext(char *text, uint16_t color) {
     display.write(i);
     if ((i > 0) && (i % 21 == 0))
       display.println();
-  }    
+  }
 }
 
 void testfastlines(uint16_t color1, uint16_t color2) {
@@ -192,7 +192,7 @@ void testfillcircles(uint8_t radius, uint16_t color) {
     for (uint8_t y=radius; y < display.height()-1; y+=radius*2) {
       display.fillCircle(x, y, radius, color);
     }
-  }  
+  }
 }
 
 void testdrawcircles(uint8_t radius, uint16_t color) {
@@ -200,7 +200,7 @@ void testdrawcircles(uint8_t radius, uint16_t color) {
     for (int16_t y=0; y < display.height()-1+radius; y+=radius*2) {
       display.drawCircle(x, y, radius, color);
     }
-  }  
+  }
 }
 
 void testtriangles() {
@@ -245,7 +245,7 @@ void testroundrects() {
 void tftPrintTest() {
   display.fillScreen(BLACK);
   display.setCursor(0, 5);
-  display.setTextColor(RED);  
+  display.setTextColor(RED);
   display.setTextSize(1);
   display.println("Hello World!");
   display.setTextColor(YELLOW, GREEN);
@@ -297,7 +297,7 @@ void mediabuttons() {
 }
 
 /**************************************************************************/
-/*! 
+/*!
     @brief  Renders a simple test pattern on the LCD
 */
 /**************************************************************************/
@@ -305,19 +305,19 @@ void lcdTestPattern(void)
 {
   uint8_t w,h;
   display.setAddrWindow(0, 0, 96, 64);
-  
-  for(h=0; h<64; h++)
+
+  for (h = 0; h < 64; h++)
   {
-    for(w=0; w<96; w++)
+    for (w = 0; w < 96; w++)
     {
-      if(w>83){display.writePixel(WHITE);}
-      else if(w>71){display.writePixel(BLUE);}
-      else if(w>59){display.writePixel(GREEN);}
-      else if(w>47){display.writePixel(CYAN);}
-      else if(w>35){display.writePixel(RED);}
-      else if(w>23){display.writePixel(MAGENTA);}
-      else if(w>11){display.writePixel(YELLOW);}
-      else {display.writePixel(BLACK);}
+      if (w > 83) { display.writePixel(w, h, WHITE); }
+      else if (w > 71) { display.writePixel(w, h, BLUE); }
+      else if (w > 59) { display.writePixel(w, h, GREEN); }
+      else if (w > 47) { display.writePixel(w, h, CYAN); }
+      else if (w > 35) { display.writePixel(w, h, RED); }
+      else if (w > 23) { display.writePixel(w, h, MAGENTA); }
+      else if (w > 11) { display.writePixel(w, h, YELLOW); }
+      else { display.writePixel(w, h, BLACK); }
     }
   }
   display.endWrite();
