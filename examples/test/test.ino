@@ -211,7 +211,7 @@ void testtriangles() {
   int x = display.height();
   int y = 0;
   int z = display.width();
-  for(t = 0 ; t <= 15; t+=1) {
+  for (t = 0 ; t <= 15; t+=1) {
     display.drawTriangle(w, y, y, x, z, x, color);
     x-=4;
     y+=4;
@@ -306,18 +306,25 @@ void lcdTestPattern(void)
   uint8_t w,h;
   display.setAddrWindow(0, 0, 96, 64);
 
-  for (h = 0; h < 64; h++)
-  {
-    for (w = 0; w < 96; w++)
-    {
-      if (w > 83) { display.writePixel(w, h, WHITE); }
-      else if (w > 71) { display.writePixel(w, h, BLUE); }
-      else if (w > 59) { display.writePixel(w, h, GREEN); }
-      else if (w > 47) { display.writePixel(w, h, CYAN); }
-      else if (w > 35) { display.writePixel(w, h, RED); }
-      else if (w > 23) { display.writePixel(w, h, MAGENTA); }
-      else if (w > 11) { display.writePixel(w, h, YELLOW); }
-      else { display.writePixel(w, h, BLACK); }
+  for (h = 0; h < 64; h++) {
+    for (w = 0; w < 96; w++) {
+      if (w > 83) {
+        display.writePixel(w, h, WHITE);
+      } else if (w > 71) {
+        display.writePixel(w, h, BLUE);
+      } else if (w > 59) {
+        display.writePixel(w, h, GREEN);
+      } else if (w > 47) {
+        display.writePixel(w, h, CYAN);
+      } else if (w > 35) {
+        display.writePixel(w, h, RED);
+      } else if (w > 23) {
+        display.writePixel(w, h, MAGENTA);
+      } else if (w > 11) {
+        display.writePixel(w, h, YELLOW);
+      } else {
+        display.writePixel(w, h, BLACK);
+      }
     }
   }
   display.endWrite();
