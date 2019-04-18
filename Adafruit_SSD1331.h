@@ -63,8 +63,10 @@
 /// Class to manage hardware interface with SSD1331 chipset
 class Adafruit_SSD1331 : public Adafruit_SPITFT {
  public:
-  Adafruit_SSD1331(uint8_t _CS, uint8_t _DC, uint8_t _MOSI, uint8_t _SCLK, uint8_t _RST);
-  Adafruit_SSD1331(uint8_t _CS, uint8_t _DC, uint8_t _RST);
+  Adafruit_SSD1331(int8_t _CS, int8_t _DC, int8_t _MOSI, int8_t _SCLK, int8_t _RST);
+  Adafruit_SSD1331(int8_t _CS, int8_t _DC, int8_t _RST);
+  // 3-4 args using hardware SPI (must specify peripheral) (reset optional)
+  Adafruit_SSD1331(SPIClass *spi, int8_t _CS, int8_t _DC, int8_t _RST = -1);
 
   // commands
   void begin(uint32_t begin=8000000);
