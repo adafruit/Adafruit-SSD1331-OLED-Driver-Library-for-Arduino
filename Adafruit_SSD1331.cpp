@@ -156,10 +156,10 @@ Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t rst) : Adafruit_
     @param    rst   Reset pin # (optional, pass -1 if unused)
 */
 /**************************************************************************/
-Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t _CS, int8_t _DC, int8_t _RST) :
+Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc, int8_t rst) :
 #if defined(ESP8266)
-  Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, _CS, _DC, _RST) {
+  Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, cs, dc, rst) {
 #else
-  Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, _CS, _DC, _RST) {
+  Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst) {
 #endif
 }
