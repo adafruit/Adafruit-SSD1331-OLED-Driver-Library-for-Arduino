@@ -54,11 +54,11 @@ void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_
   sendCommand(0x15); // Column addr set
   sendCommand(x1);
   sendCommand(x2);
-  
+
   sendCommand(0x75); // Column addr set
   sendCommand(y1);
   sendCommand(y2);
-  
+
   startWrite();
 }
 
@@ -146,9 +146,19 @@ Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t mosi, int8_t scl
 Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t rst) : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
 }
 
+/**************************************************************************/
+/*!
+    @brief  Instantiate Adafruit SSD1331 driver with hardware SPI
+    @param    spi   Pointer to an existing SPIClass instance (e.g. &SPI, the
+                    microcontroller's primary SPI bus).
+    @param    cs    Chip select pin #
+    @param    dc    Data/Command pin #
+    @param    rst   Reset pin # (optional, pass -1 if unused)
+*/
+/**************************************************************************/
 Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t _CS, int8_t _DC, int8_t _RST) :
 #if defined(ESP8266)
-Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, _CS, _DC, _RST) {
+  Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, _CS, _DC, _RST) {
 #else
   Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, _CS, _DC, _RST) {
 #endif
