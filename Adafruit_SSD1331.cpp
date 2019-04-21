@@ -163,3 +163,13 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc, int8_t r
   Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst) {
 #endif
 }
+
+/**************************************************************************/
+/*!
+    @brief  Change whether display is on or off
+    @param	 enable True if you want the display ON, false OFF
+*/
+/**************************************************************************/
+void Adafruit_SSD1331::enableDisplay(boolean enable) {
+    sendCommand(enable ? SSD1331_CMD_DISPLAYON : SSD1331_CMD_DISPLAYOFF);
+}
