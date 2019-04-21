@@ -73,6 +73,8 @@ class Adafruit_SSD1331 : public Adafruit_SPITFT {
 
   void      setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
+  void enableDisplay(boolean enable);
+
   static const int16_t TFTWIDTH = 96;    ///< The width of the display
   static const int16_t TFTHEIGHT = 64;   ///< The height of the display
 
