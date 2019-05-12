@@ -1,37 +1,48 @@
-// Adafruit_NeoMatrix example for single NeoPixel Shield.
+// GFX Demo for multiple backends
 // By Marc MERLIN <marc_soft@merlins.org>
 // Contains code (c) Adafruit, license BSD
 
 #include <Adafruit_GFX.h>
+#include <Adafruit_SSD1331.h>
+#include <SPI.h>
+
+#define show endWrite
+#define clear() fillScreen(0)
+#define mw 96
+#define mh 64
 
 #include "smileytongue24.h"
+#define BM32
+#include "google32.h"
 
-#include <Adafruit_GFX.h>   // Core graphics library
-#include <RGBmatrixPanel.h> // Hardware-specific library
+/*
+Pin	Function	ESP-8266 Pin
+D1	IO, SCL			GPIO5
+D2	IO, SDA			GPIO4
+D5	IO, SCK			GPIO14
+D7	IO, MOSI		GPIO13
+D8	IO, 10k Pull-down, SS	GPIO15
+*/
+// You can use any (4 or) 5 pins
+// hwspi hardcodes those pins, no need to redefine them
+// #define sclk 14
+// #define mosi 13
+#define cs   4
+#define rst  15
+#define dc   5
 
-#define CLK 11  // MUST be on PORTB! (Use pin 8 on Uno)
-#define LAT A3
-#define OE  9
-#define A   A0
-#define B   A1
-#define C   A2
-// Enable double buffering
-RGBmatrixPanel *matrix = new RGBmatrixPanel(A, B, C, CLK, LAT, OE, true);
+// Option 1: use any pins but a little slower
+//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);
 
-// Panel Matrix doesn't fully work like Neomatrix (which I wrote this 
-// demo for), so map a few calls to be compatible. The rest comes from
-// Adafruit::GFX and works the same on both backends.
-#define setBrightness(x) fillScreen(0) // no-op, no brightness on this board
-#define clear() fillScreen(0)
-#define show() swapBuffers(true)
-#define Color(x,y,z) Color333(x/36,y/36,z/36)
+// Option 2: must use the hardware SPI pins
+// (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
+// an output. This is much faster - also required if you want
+// to use the microSD card (see the image drawing example)
+Adafruit_SSD1331 display = Adafruit_SSD1331(&SPI, cs, dc, rst);
 
-// Define matrix width and height.
-#define mw 32
-#define mh 16
 
-// This could also be defined as matrix->color(255,0,0) but those defines
-// are meant to work for Adafruit::GFX backends that are lacking color()
+// This could also be defined as display.color(255,0,0) but those defines
+// are meant to work for adafruit_gfx backends that are lacking color()
 #define LED_BLACK		0
 
 #define LED_RED_VERYLOW 	(3 <<  11)
@@ -277,17 +288,32 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 	//Serial.print(" -> ");
 	//Serial.println(RGB_bmp_fixed[pixel], HEX);
     }
-    matrix->drawRGBBitmap(x, y, RGB_bmp_fixed, w, h);
+    display.drawRGBBitmap(x, y, RGB_bmp_fixed, w, h);
+}
+
+// In a case of a tile of neomatrices, this test is helpful to make sure that the
+// pixels are all in sequence (to check your wiring order and the tile options you
+// gave to the constructor).
+void count_pixels() {
+    display.clear();
+    for (uint16_t i=0; i<mh; i++) {
+	for (uint16_t j=0; j<mw; j++) {
+	    display.drawPixel(j, i, i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH);
+	    // depending on the matrix size, it's too slow to display each pixel, so
+	    // make the scan init faster. This will however be too fast on a small matrix.
+	    if (!(j%7)) display.show();
+	}
+    }
 }
 
 // Fill the screen with multiple levels of white to gauge the quality
 void display_four_white() {
-    matrix->clear();
-    matrix->fillRect(0,0, mw,mh, LED_WHITE_HIGH);
-    matrix->drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
-    matrix->drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
-    matrix->drawRect(3,3, mw-6,mh-6, LED_WHITE_VERYLOW);
-    matrix->show();
+    display.clear();
+    display.fillRect(0,0, mw,mh, LED_WHITE_HIGH);
+    display.drawRect(1,1, mw-2,mh-2, LED_WHITE_MEDIUM);
+    display.drawRect(2,2, mw-4,mh-4, LED_WHITE_LOW);
+    display.drawRect(3,3, mw-6,mh-6, LED_WHITE_VERYLOW);
+    display.show();
 }
 
 void display_bitmap(uint8_t bmp_num, uint16_t color) { 
@@ -296,13 +322,13 @@ void display_bitmap(uint8_t bmp_num, uint16_t color) {
     // Clear the space under the bitmap that will be drawn as
     // drawing a single color pixmap does not write over pixels
     // that are nul, and leaves the data that was underneath
-    matrix->fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
-    matrix->drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
+    display.fillRect(bmx,bmy, bmx+8,bmy+8, LED_BLACK);
+    display.drawBitmap(bmx, bmy, mono_bmp[bmp_num], 8, 8, color);
     bmx += 8;
     if (bmx >= mw) bmx = 0;
     if (!bmx) bmy += 8;
     if (bmy >= mh) bmy = 0;
-    matrix->show();
+    display.show();
 }
 
 void display_rgbBitmap(uint8_t bmp_num) { 
@@ -313,130 +339,144 @@ void display_rgbBitmap(uint8_t bmp_num) {
     if (bmx >= mw) bmx = 0;
     if (!bmx) bmy += 8;
     if (bmy >= mh) bmy = 0;
-    matrix->show();
+    display.show();
 }
 
 void display_lines() {
-    matrix->clear();
+    display.clear();
 
     // 4 levels of crossing red lines.
-    matrix->drawLine(0,mh/2-2, mw-1,2, LED_RED_VERYLOW);
-    matrix->drawLine(0,mh/2-1, mw-1,3, LED_RED_LOW);
-    matrix->drawLine(0,mh/2,   mw-1,mh/2, LED_RED_MEDIUM);
-    matrix->drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
+    display.drawLine(0,mh/2-2, mw-1,2, LED_RED_VERYLOW);
+    display.drawLine(0,mh/2-1, mw-1,3, LED_RED_LOW);
+    display.drawLine(0,mh/2,   mw-1,mh/2, LED_RED_MEDIUM);
+    display.drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
 
     // 4 levels of crossing green lines.
-    matrix->drawLine(mw/2-2, 0, mw/2-2, mh-1, LED_GREEN_VERYLOW);
-    matrix->drawLine(mw/2-1, 0, mw/2-1, mh-1, LED_GREEN_LOW);
-    matrix->drawLine(mw/2+0, 0, mw/2+0, mh-1, LED_GREEN_MEDIUM);
-    matrix->drawLine(mw/2+1, 0, mw/2+1, mh-1, LED_GREEN_HIGH);
+    display.drawLine(mw/2-2, 0, mw/2-2, mh-1, LED_GREEN_VERYLOW);
+    display.drawLine(mw/2-1, 0, mw/2-1, mh-1, LED_GREEN_LOW);
+    display.drawLine(mw/2+0, 0, mw/2+0, mh-1, LED_GREEN_MEDIUM);
+    display.drawLine(mw/2+1, 0, mw/2+1, mh-1, LED_GREEN_HIGH);
 
     // Diagonal blue line.
-    matrix->drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
-    matrix->drawLine(0,mh-1, mw-1,0, LED_ORANGE_MEDIUM);
-    matrix->show();
+    display.drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
+    display.drawLine(0,mh-1, mw-1,0, LED_ORANGE_MEDIUM);
+    display.show();
 }
 
 void display_boxes() {
-    matrix->clear();
-    matrix->drawRect(0,0, mw,mh, LED_BLUE_HIGH);
-    matrix->drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
-    matrix->fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
-    matrix->fillRect(3,3, mw-6,mh-6, LED_ORANGE_MEDIUM);
-    matrix->show();
+    display.clear();
+    display.drawRect(0,0, mw,mh, LED_BLUE_HIGH);
+    display.drawRect(1,1, mw-2,mh-2, LED_GREEN_MEDIUM);
+    display.fillRect(2,2, mw-4,mh-4, LED_RED_HIGH);
+    display.fillRect(3,3, mw-6,mh-6, LED_ORANGE_MEDIUM);
+    display.show();
 }
 
 void display_circles() {
-    matrix->clear();
-    matrix->drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
-    matrix->drawCircle(mw/2-1-min(mw,mh)/8, mh/2-1-min(mw,mh)/8, min(mw,mh)/4, LED_BLUE_HIGH);
-    matrix->drawCircle(mw/2+1+min(mw,mh)/8, mh/2+1+min(mw,mh)/8, min(mw,mh)/4, LED_ORANGE_MEDIUM);
-    matrix->drawCircle(1,mh-2, 1, LED_GREEN_LOW);
-    matrix->drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
-    matrix->show();
+    display.clear();
+    display.drawCircle(mw/2,mh/2, 2, LED_RED_MEDIUM);
+    display.drawCircle(mw/2-1-min(mw,mh)/8, mh/2-1-min(mw,mh)/8, min(mw,mh)/4, LED_BLUE_HIGH);
+    display.drawCircle(mw/2+1+min(mw,mh)/8, mh/2+1+min(mw,mh)/8, min(mw,mh)/4-1, LED_ORANGE_MEDIUM);
+    display.drawCircle(1,mh-2, 1, LED_GREEN_LOW);
+    display.drawCircle(mw-2,1, 1, LED_GREEN_HIGH);
+    if (min(mw,mh)>12) display.drawCircle(mw/2-1, mh/2-1, min(mh/2-1,mw/2-1), LED_CYAN_HIGH);
+    display.show();
 }
 
 void display_resolution() {
+    display.setTextSize(1);
     // not wide enough;
     if (mw<16) return;
-    matrix->clear();
+    display.clear();
     // Font is 5x7, if display is too small
     // 8 can only display 1 char
     // 16 can almost display 3 chars
     // 24 can display 4 chars
     // 32 can display 5 chars
-    matrix->setCursor(0, 0);
-    matrix->setTextColor(matrix->Color(255,0,0));
-    if (mw>10) matrix->print(mw/10);
-    matrix->setTextColor(matrix->Color(255,128,0)); 
-    matrix->print(mw % 10);
-    matrix->setTextColor(matrix->Color(0,255,0));
-    matrix->print('x');
+    display.setCursor(0, 0);
+    display.setTextColor(LED_RED_HIGH);
+    if (mw>10) display.print(mw/10);
+    display.setTextColor(LED_ORANGE_HIGH); 
+    display.print(mw % 10);
+    display.setTextColor(LED_GREEN_HIGH);
+    display.print('x');
     // not wide enough to print 5 chars, go to next line
     if (mw<25) {
-	if (mh==13) matrix->setCursor(6, 7);
+	if (mh==13) display.setCursor(6, 7);
 	else if (mh>=13) {
-	    matrix->setCursor(mw-11, 8);
+	    display.setCursor(mw-11, 8);
 	} else {
-	    matrix->show();
+	    // we're not tall enough either, so we wait and display
+	    // the 2nd value on top.
+	    display.show();
 	    delay(2000);
-	    matrix->clear();
-	    matrix->setCursor(mw-11, 0);
+	    display.clear();
+	    display.setCursor(mw-11, 0);
 	}   
     }
-    matrix->setTextColor(matrix->Color(0,255,128)); 
-    matrix->print(mh/10);
-    matrix->setTextColor(matrix->Color(0,128,255));  
-    matrix->print(mh % 10);
+    display.setTextColor(LED_CYAN_HIGH); 
+    display.print(mh/10);
+    display.setTextColor(LED_CYAN_MEDIUM);
+    display.print(mh % 10);
     // enough room for a 2nd line
-    if (mw>25 && mh >14 || mh>16) {
-	matrix->setCursor(0, mh-7);
-	matrix->setTextColor(matrix->Color(0,255,255)); 
-	if (mw>16) matrix->print('*');
-	matrix->setTextColor(matrix->Color(255,0,0)); 
-	matrix->print('R');
-	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix->print('G');
-	matrix->setTextColor(matrix->Color(0,0,255)); 
-	matrix->print("B");
-	matrix->setTextColor(matrix->Color(255,255,0)); 
-	matrix->print("*");
+    if ((mw>25 && mh >14) || mh>16) {
+	display.setCursor(0, mh-7);
+	display.setTextColor(LED_CYAN_LOW);
+	if (mw>16) display.print('*');
+	display.setTextColor(LED_RED_HIGH);
+	display.print('R');
+	display.setTextColor(LED_GREEN_HIGH);
+	display.print('G');
+	display.setTextColor(LED_BLUE_HIGH); 
+	display.print("B");
+	display.setTextColor(LED_PURPLE_HIGH); 
+	// this one could be displayed off screen, but we don't care :)
+	display.print("*");
+
+	// We have a big array, great, let's assume 32x32 and add something in the middle
+	if (mh>24 && mw>25) {
+	    for (uint16_t i=0; i<mw; i+=8) fixdrawRGBBitmap(i, mh/2-7+(i%16)/8*6, RGB_bmp[10], 8, 8);
+	}
     }
     
-    matrix->show();
+    display.show();
 }
 
 void display_scrollText() {
-    matrix->clear();
-    matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-    matrix->setTextSize(1);
-    matrix->setRotation(0);
+    uint8_t size = max(int(mh/10), 1);
+    display.clear();
+    display.setTextWrap(false);  // we don't wrap text so it scrolls nicely
+    display.setTextSize(1);
+    display.setRotation(0);
     for (int8_t x=7; x>=-42; x--) {
-	matrix->clear();
-	matrix->setCursor(x,0);
-	matrix->setTextColor(LED_GREEN_HIGH);
-	matrix->print("Hello");
+	display.clear();
+	display.setCursor(x,0);
+	display.setTextColor(LED_GREEN_HIGH);
+	display.print("Hello");
 	if (mh>11) {
-	    matrix->setCursor(-20-x,mh-7);
-	    matrix->setTextColor(LED_ORANGE_HIGH);
-	    matrix->print("World");
+	    display.setCursor(-20-x,mh-7);
+	    display.setTextColor(LED_ORANGE_HIGH);
+	    display.print("World");
 	}
-	matrix->show();
-       delay(50);
+	display.show();
+      // delay(50);
     }
 
-    matrix->setRotation(3);
-    matrix->setTextColor(LED_BLUE_HIGH);
-    for (int8_t x=7; x>=-45; x--) {
-	matrix->clear();
-	matrix->setCursor(x,mw/2-4);
-	matrix->print("Rotate");
-	matrix->show();
-       delay(50);
+    display.setRotation(1);
+    display.setTextSize(size);
+    display.setTextColor(LED_BLUE_HIGH);
+    for (int16_t x=8*size; x>=-6*8*size; x--) {
+	display.clear();
+	display.setCursor(x,mw/2-size*4);
+	display.print("Rotate");
+	display.show();
+	// note that on a big array the refresh rate from show() will be slow enough that
+	// the delay become irrelevant. This is already true on a 32x32 array.
+       // delay(50/size);
     }
-    matrix->setRotation(0);
-    matrix->setCursor(0,0);
-    matrix->show();
+    display.setRotation(0);
+    display.setCursor(0,0);
+    display.show();
 }
 
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
@@ -455,28 +495,32 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
     int16_t xfdir = -1;
     int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<1000; i++) {
+    for (uint16_t i=1; i<200; i++) {
 	bool updDir = false;
 
 	// Get actual x/y by dividing by 16.
 	int16_t x = xf >> 4;
 	int16_t y = yf >> 4;
 
-	matrix->clear();
+	display.clear();
 	// bounce 8x8 tri color smiley face around the screen
 	if (bitmapSize == 8) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
 	// pan 24x24 pixmap
-	if (bitmapSize == 24) matrix->drawRGBBitmap(x, y, (const uint16_t *)bitmap24, bitmapSize, bitmapSize);
-	matrix->show();
+	if (bitmapSize == 24) display.drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
+#ifdef BM32
+	if (bitmapSize == 32) display.drawRGBBitmap(x, y, (const uint16_t *) bitmap32, bitmapSize, bitmapSize);
+#endif
+	display.show();
 	 
 	// Only pan if the display size is smaller than the pixmap
-	if (mw<bitmapSize) {
+	// but not if the difference is too small or it'll look bad.
+	if (bitmapSize-mw>2) {
 	    xf += xfc*xfdir;
 	    if (xf >= 0)                      { xfdir = -1; updDir = true ; };
 	    // we don't go negative past right corner, go back positive
 	    if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
 	}
-	if (mh<bitmapSize) {
+	if (bitmapSize-mh>2) {
 	    yf += yfc*yfdir;
 	    // we shouldn't display past left corner, reverse direction.
 	    if (yf >= 0)                      { yfdir = -1; updDir = true ; };
@@ -501,7 +545,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	    xfc = constrain(xfc + random(-1, 2), 3, 16);
 	    yfc = constrain(xfc + random(-1, 2), 3, 16);
 	}
-	delay(10);
+	//delay(10);
     }
 }
 
@@ -511,6 +555,26 @@ void loop() {
     // loop back to the top left corner
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
+
+// You can't use millis to time frame fresh rate because it uses cli() which breaks millis()
+// So I use my stopwatch to count 200 displays and that's good enough
+#if 0
+    // 200 displays in 13 seconds = 15 frames per second for 4096 pixels
+    for (uint8_t i=0; i<100; i++) { 
+	display.fillScreen(LED_BLUE_LOW);
+	display.show();
+	display.fillScreen(LED_RED_LOW);
+	display.show();
+    }
+#endif
+
+    Serial.println("Count pixels");
+    count_pixels();
+    Serial.println("Count pixels done");
+    delay(1000);
+
+    display_four_white();
+    delay(3000);
 
     Serial.print("Screen pixmap capacity: ");
     Serial.println(pixmap_count);
@@ -522,9 +586,11 @@ void loop() {
     }
     delay(1000);
 
+    Serial.println("Display Resolution");
     display_resolution();
     delay(3000);
 
+    Serial.println("Display bitmaps");
     // Cycle through red, green, blue, display 2 checkered patterns
     // useful to debug some screen types and alignment.
     uint16_t bmpcolor[] = { LED_GREEN_HIGH, LED_BLUE_HIGH, LED_RED_HIGH };
@@ -536,6 +602,7 @@ void loop() {
  	delay(500);
     }
 
+    Serial.println("Display smileys");
     // Display 3 smiley faces.
     for (uint8_t i=2; i<=4; i++)
     {
@@ -546,6 +613,7 @@ void loop() {
     // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
     delay(mw>8?1000:500);
 
+    Serial.println("Display lines, boxes and circles");
     display_lines();
     delay(3000);
 
@@ -554,7 +622,9 @@ void loop() {
 
     display_circles();
     delay(3000);
+    display.clear();
 
+    Serial.println("Display RGB bitmaps");
     for (uint8_t i=0; i<=(sizeof(RGB_bmp)/sizeof(RGB_bmp[0])-1); i++)
     {
 	display_rgbBitmap(i);
@@ -563,28 +633,35 @@ void loop() {
     // If we have multiple pixmaps displayed at once, wait a bit longer on the last.
     delay(mw>8?1000:500);
 
-    display_four_white();
-    delay(3000);
-
+    Serial.println("Scrolltext");
     display_scrollText();
 
+#ifdef BM32
+    Serial.println("bounce 32 bitmap");
+    display_panOrBounceBitmap(32);
+#endif
     // pan a big pixmap
+    Serial.println("pan/bounce 24 bitmap");
     display_panOrBounceBitmap(24);
     // bounce around a small one
+    Serial.println("pan/bounce 8 bitmap");
     display_panOrBounceBitmap(8);
+
+    Serial.println("Demo loop done, starting over");
 }
 
 void setup() {
+    delay(1000);
     Serial.begin(115200);
-    matrix->begin();
-    matrix->setTextWrap(false);
-    matrix->setBrightness(BRIGHTNESS);
+    display.begin();
+    display.setTextWrap(false);
+    display.setAddrWindow(0, 0, mw, mh);
     // Test full bright of all LEDs. If brightness is too high
     // for your current limit (i.e. USB), decrease it.
-    matrix->fillScreen(LED_WHITE_HIGH);
-    matrix->show();
-    delay(1000);
-    matrix->clear();
+    display.fillScreen(LED_WHITE_HIGH);
+    display.show();
+    delay(3000);
+    display.clear();
 }
 
 // vim:sts=4:sw=4
