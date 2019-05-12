@@ -693,7 +693,10 @@ pan/bounce 8 bitmap FPS: 3174
 void setup() {
     delay(1000);
     Serial.begin(115200);
-    display.begin(80000000);
+    // Default is 40Mhz
+    display.begin();
+    Serial.println("For extra speed, try 80Mhz, may be less stable");
+    //display.begin(80000000);
     display.setTextWrap(false);
     display.setAddrWindow(0, 0, mw, mh);
     // Test full bright of all LEDs. If brightness is too high
