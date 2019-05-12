@@ -21,13 +21,42 @@
 #include <SPI.h>
 
 
+/*
+
+SD1331 Pin	    Arduino	ESP8266		rPi
+1 GND
+2 VCC
+3 SCL/SCK/CLK/D0		GPIO14/D5	GPIO11/SPI0-SCLK	
+4 SDA/MOSI/D1			GPIO13/D7	GPIO10/SPI0-MOSI	
+5 RES/RST			GPIO15/D8	GPIO24			
+6 DC/A0 (data)			GPIO05/D1	GPIO23			
+7 CS				GPIO04/D2	GPIO08			
+
+*/
 // You can use any (4 or) 5 pins
+// hwSPI hardcodes the first 2 pins
+#ifdef ESP8266
+#define sclk 14
+#define mosi 13
+#define rst  15
+#define dc   5
+#define cs   4
+#else
 #define sclk 13
 #define mosi 11
-#define cs   10
 #define rst  9
 #define dc   8
+#define cs   10
+#endif
 
+// Option 1: use any pins but a little slower
+//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);
+
+// Option 2: must use the hardware SPI pins
+// (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
+// an output. This is much faster - also required if you want
+// to use the microSD card (see the image drawing example)
+Adafruit_SSD1331 display = Adafruit_SSD1331(&SPI, cs, dc, rst);
 
 // Color definitions
 #define	BLACK           0x0000
@@ -38,15 +67,6 @@
 #define MAGENTA         0xF81F
 #define YELLOW          0xFFE0
 #define WHITE           0xFFFF
-
-// Option 1: use any pins but a little slower
-//Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);
-
-// Option 2: must use the hardware SPI pins
-// (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
-// an output. This is much faster - also required if you want
-// to use the microSD card (see the image drawing example)
-Adafruit_SSD1331 display = Adafruit_SSD1331(&SPI, cs, dc, rst);
 
 float p = 3.1415926;
 
@@ -63,6 +83,9 @@ void setup(void) {
   Serial.println(time, DEC);
   delay(500);
 
+}
+
+void loop() {
   lcdTestPattern();
   delay(1000);
 
@@ -106,9 +129,6 @@ void setup(void) {
 
   Serial.println("done");
   delay(1000);
-}
-
-void loop() {
 }
 
 void testlines(uint16_t color) {
