@@ -25,21 +25,22 @@ D8	IO, 10k Pull-down, SS	GPIO15
 */
 // You can use any (4 or) 5 pins
 // hwspi hardcodes those pins, no need to redefine them
-// #define sclk 14
-// #define mosi 13
+#define sclk 14
+#define mosi 13
 #define cs   4
 #define rst  15
 #define dc   5
 
 // Option 1: use any pins but a little slower
+//#pragma message "Using SWSPI"
 //Adafruit_SSD1331 display = Adafruit_SSD1331(cs, dc, mosi, sclk, rst);
 
 // Option 2: must use the hardware SPI pins
 // (for UNO thats sclk = 13 and sid = 11) and pin 10 must be
 // an output. This is much faster - also required if you want
 // to use the microSD card (see the image drawing example)
+#pragma message "Using HWSPI"
 Adafruit_SSD1331 display = Adafruit_SSD1331(&SPI, cs, dc, rst);
-
 
 // This could also be defined as display.color(255,0,0) but those defines
 // are meant to work for adafruit_gfx backends that are lacking color()
@@ -482,7 +483,7 @@ void display_scrollText() {
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-void display_panOrBounceBitmap (uint8_t bitmapSize) {
+void display_panOrBounceBitmap (uint8_t bitmapSize, bool clear = true) {
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
     int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
@@ -495,14 +496,18 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
     int16_t xfdir = -1;
     int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<200; i++) {
+    uint16_t frames = 200;
+    long time1 = millis();
+
+    for (uint16_t i=1; i<frames; i++) {
+	yield();
 	bool updDir = false;
 
 	// Get actual x/y by dividing by 16.
 	int16_t x = xf >> 4;
 	int16_t y = yf >> 4;
 
-	display.clear();
+	if (clear) display.clear();
 	// bounce 8x8 tri color smiley face around the screen
 	if (bitmapSize == 8) fixdrawRGBBitmap(x, y, RGB_bmp[10], 8, 8);
 	// pan 24x24 pixmap
@@ -547,6 +552,13 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	}
 	//delay(10);
     }
+
+    uint16_t elapsed = millis() - time1;
+    uint16_t fps = 1000 * frames / elapsed;
+    Serial.print("Scroll test number of ms: ");
+    Serial.println(elapsed);
+    Serial.print("FPS: ");
+    Serial.println(fps);
 }
 
 
@@ -556,18 +568,57 @@ void loop() {
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
 
-// You can't use millis to time frame fresh rate because it uses cli() which breaks millis()
-// So I use my stopwatch to count 200 displays and that's good enough
-#if 0
-    // 200 displays in 13 seconds = 15 frames per second for 4096 pixels
-    for (uint8_t i=0; i<100; i++) { 
+    // ESP8266 HWSPI: 34 fps, SWSPI: 6 fps
+    // If you change SPI frequency to 80Mhz in display.begin, you can get 64fps
+    uint16_t frames = 20;
+    long time1 = millis();
+    for (uint8_t i=0; i<frames; i++) { 
 	display.fillScreen(LED_BLUE_LOW);
 	display.show();
 	display.fillScreen(LED_RED_LOW);
 	display.show();
     }
-#endif
+    uint16_t elapsed = millis() - time1;
+    uint16_t fps = 1000 * frames*2 / elapsed;
+    Serial.print("Speed test number of ms: ");
+    Serial.println(elapsed);
+    Serial.print("FPS: ");
+    Serial.println(fps);
 
+/* ESP8266 HWSPI speeds 80Mhz
+bounce 32 bitmap FPS: 18
+bounce 32 bitmap no clear FPS: 25
+pan/bounce 24 bitmap FPS: 26
+pan/bounce 24 bitmap no clear FPS: 44
+pan/bounce 8 bitmap FPS: 63
+pan/bounce 8 bitmap FPS: 3174
+*/
+
+#ifdef BM32
+    Serial.println("bounce 32 bitmap");
+    display_panOrBounceBitmap(32);
+
+    Serial.println("bounce 32 bitmap no clear");
+    display_panOrBounceBitmap(32, false);
+#endif
+    // pan a big pixmap
+    Serial.println("pan/bounce 24 bitmap");
+    display_panOrBounceBitmap(24);
+    Serial.println("pan/bounce 24 bitmap no clear");
+    display_panOrBounceBitmap(24, false);
+
+
+    // bounce around a small one
+    Serial.println("pan/bounce 8 bitmap");
+    display_panOrBounceBitmap(8);
+
+    Serial.println("pan/bounce 8 bitmap");
+    display_panOrBounceBitmap(8, false);
+
+
+    // this is more helpful on displays where each show refreshes
+    // the entire display. With SSD1331, it's a single pixel being pushed, 
+    // so it's near instant
     Serial.println("Count pixels");
     count_pixels();
     Serial.println("Count pixels done");
@@ -636,24 +687,13 @@ void loop() {
     Serial.println("Scrolltext");
     display_scrollText();
 
-#ifdef BM32
-    Serial.println("bounce 32 bitmap");
-    display_panOrBounceBitmap(32);
-#endif
-    // pan a big pixmap
-    Serial.println("pan/bounce 24 bitmap");
-    display_panOrBounceBitmap(24);
-    // bounce around a small one
-    Serial.println("pan/bounce 8 bitmap");
-    display_panOrBounceBitmap(8);
-
     Serial.println("Demo loop done, starting over");
 }
 
 void setup() {
     delay(1000);
     Serial.begin(115200);
-    display.begin();
+    display.begin(80000000);
     display.setTextWrap(false);
     display.setAddrWindow(0, 0, mw, mh);
     // Test full bright of all LEDs. If brightness is too high
