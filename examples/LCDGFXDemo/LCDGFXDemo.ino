@@ -16,12 +16,14 @@
 #include "google32.h"
 
 /*
-Pin	Function	ESP-8266 Pin
-D1	IO, SCL			GPIO5
-D2	IO, SDA			GPIO4
-D5	IO, SCK			GPIO14
-D7	IO, MOSI		GPIO13
-D8	IO, 10k Pull-down, SS	GPIO15
+SD1331 Pin	    Arduino	ESP8266		rPi
+1 GND
+2 VCC
+3 SCL/SCK/CLK/D0	13	GPIO14/D5	GPIO11/SPI0-SCLK	
+4 SDA/MOSI/D1		11	GPIO13/D7	GPIO10/SPI0-MOSI	
+5 RES/RST		9	GPIO15/D8	GPIO24			
+6 DC/A0 (data)		8	GPIO05/D1	GPIO23			
+7 CS			10	GPIO04/D2	GPIO08		
 */
 // You can use any (4 or) 5 pins
 // hwspi hardcodes those pins, no need to redefine them
