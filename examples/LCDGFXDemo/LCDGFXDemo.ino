@@ -309,6 +309,21 @@ void count_pixels() {
     }
 }
 
+// Example that shows how to push entire lines at a time faster than 
+// writing pixels one by one as in count_pixels
+void count_writePixels() {
+    uint16_t line[mw+3];
+    for (uint8_t i=0; i<mw+3; i++) {
+	line[i] = i%3==0?LED_BLUE_HIGH:i%3==1?LED_RED_HIGH:LED_GREEN_HIGH;
+    }
+    display.startWrite();
+    display.setAddrWindow(0, 0, mw, mh);
+    for (uint8_t j=0; j<mh; j++) {
+	display.writePixels(line + (j%3), mw);
+    }
+    display.endWrite();
+}
+
 // Fill the screen with multiple levels of white to gauge the quality
 void display_four_white() {
     display.clear();
@@ -570,6 +585,7 @@ void loop() {
     // 8x8 => 1, 16x8 => 2, 17x9 => 6
     static uint8_t pixmap_count = ((mw+7)/8) * ((mh+7)/8);
 
+
     // ESP8266 HWSPI: 34 fps, SWSPI: 6 fps
     // If you change SPI frequency to 80Mhz in display.begin, you can get 64fps
     uint16_t frames = 20;
@@ -581,7 +597,7 @@ void loop() {
 	display.show();
     }
     uint16_t elapsed = millis() - time1;
-    uint16_t fps = 1000 * frames*2 / elapsed;
+    float_t fps = 1000.0 * frames*2 / elapsed;
     Serial.print("Speed test number of ms: ");
     Serial.println(elapsed);
     Serial.print("FPS: ");
@@ -617,15 +633,38 @@ pan/bounce 8 bitmap FPS: 3174
     Serial.println("pan/bounce 8 bitmap");
     display_panOrBounceBitmap(8, false);
 
-
     // this is more helpful on displays where each show refreshes
     // the entire display. With SSD1331, it's a single pixel being pushed, 
-    // so it's near instant
-    Serial.println("Count pixels");
-    count_pixels();
+    // so it's near instant, so we run it 100 times
+    // At 80Mhz, on ESP8266, I get 3.68fps (2.99fps at 40Mhz)
+    frames = 10;
+    Serial.println("\nCount pixels");
+    time1 = millis();
+    for (uint8_t i=0; i<frames; i++) count_pixels();
+    elapsed = millis() - time1;
+    fps = 1000.0 * frames / elapsed;
+    Serial.print("Speed test number of ms: ");
+    Serial.println(elapsed);
+    Serial.print("FPS: ");
+    Serial.println(fps);
     Serial.println("Count pixels done");
-    delay(1000);
+    delay(3000);
 
+    // Benchmark against count_writePixels
+    // At 80Mhz, on ESP8266, I get 86.96fps (42.74fps at 40Mhz)
+    Serial.println("\nCount_writePixels");
+    time1 = millis();
+    for (uint8_t i=0; i<frames; i++) count_writePixels();
+    elapsed = millis() - time1;
+    fps = 1000.0 * frames / elapsed;
+    Serial.print("Speed test number of ms: ");
+    Serial.println(elapsed);
+    Serial.print("FPS: ");
+    Serial.println(fps);
+    Serial.println("Count_writePixels done");
+    delay(5000);
+
+    Serial.print("\nDiplay whites: ");
     display_four_white();
     delay(3000);
 
