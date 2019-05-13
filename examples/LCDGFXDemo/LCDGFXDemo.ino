@@ -597,7 +597,7 @@ void loop() {
 	display.show();
     }
     uint16_t elapsed = millis() - time1;
-    float_t fps = 1000.0 * frames*2 / elapsed;
+    float fps = 1000.0 * frames*2 / elapsed;
     Serial.print("Speed test number of ms: ");
     Serial.println(elapsed);
     Serial.print("FPS: ");
