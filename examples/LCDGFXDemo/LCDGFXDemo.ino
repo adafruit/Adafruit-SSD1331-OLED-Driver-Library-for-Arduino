@@ -29,9 +29,9 @@ SD1331 Pin	    Arduino	ESP8266		rPi
 // hwspi hardcodes those pins, no need to redefine them
 #define sclk 14
 #define mosi 13
-#define cs   4
-#define rst  15
-#define dc   5
+#define cs   5
+#define rst  9
+#define dc   6
 
 // Option 1: use any pins but a little slower
 //#pragma message "Using SWSPI"
