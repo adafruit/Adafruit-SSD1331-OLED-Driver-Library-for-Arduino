@@ -1,3 +1,4 @@
+# Adafruit SSD1331 Arduino Library [![Build Status](https://github.com/adafruit/Adafruit_SSD1331/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit_SSD1331/actions)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit-SSD1331-OLED-Driver-Library-for-Arduino/html/index.html)
 This is a library for the 0.96" 16-bit Color OLED with SSD1331 driver chip
 
   Pick one up today in the adafruit shop!
