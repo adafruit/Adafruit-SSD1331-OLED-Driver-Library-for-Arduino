@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['setaddrwindow',['setAddrWindow',['../class_adafruit___s_s_d1331.html#a837793af8c3841ea27dcaed0991f8e8a',1,'Adafruit_SSD1331']]],
   ['ssd1331_5fcmd_5fclockdiv',['SSD1331_CMD_CLOCKDIV',['../_adafruit___s_s_d1331_8h.html#a1fe9a82c78a092d08e5a42b7c6a2fcf9',1,'Adafruit_SSD1331.h']]],
   ['ssd1331_5fcmd_5fcontrasta',['SSD1331_CMD_CONTRASTA',['../_adafruit___s_s_d1331_8h.html#a3b519a68e4f7065cc3b13535402b60bb',1,'Adafruit_SSD1331.h']]],
   ['ssd1331_5fcmd_5fcontrastb',['SSD1331_CMD_CONTRASTB',['../_adafruit___s_s_d1331_8h.html#ae196e93c21b6db92e844aa1dd5792367',1,'Adafruit_SSD1331.h']]],
