@@ -188,3 +188,169 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
 void Adafruit_SSD1331::enableDisplay(boolean enable) {
   sendCommand(enable ? SSD1331_CMD_DISPLAYON : SSD1331_CMD_DISPLAYOFF);
 }
+
+#ifdef SSD1331_ENABLE_ACCELERATION
+
+// split the color into channels, with the top bit of each channel in bit 5.
+#define split_color(color) \
+uint8_t r = (color >> 10) & 0x3E;\
+uint8_t g = (color >> 5) & 0x3F;\
+uint8_t b = (color << 1) & 0x3E;
+
+
+/*!
+    @brief  A lower-level version of writeFillRect(). This version requires
+            all inputs are in-bounds, that width and height are positive,
+            and no part extends offscreen. NO EDGE CLIPPING OR REJECTION IS
+            PERFORMED. If higher-level graphics primitives are written to
+            handle their own clipping earlier in the drawing process, this
+            can avoid unnecessary function calls and repeated clipping
+            operations in the lower-level functions.
+    @param  x      Horizontal position of first corner. MUST BE WITHIN
+                   SCREEN BOUNDS.
+    @param  y      Vertical position of first corner. MUST BE WITHIN SCREEN
+                   BOUNDS.
+    @param  w      Rectangle width in pixels. MUST BE POSITIVE AND NOT
+                   EXTEND OFF SCREEN.
+    @param  h      Rectangle height in pixels. MUST BE POSITIVE AND NOT
+                   EXTEND OFF SCREEN.
+    @param  color  16-bit fill color in '565' RGB format.
+    @note   This is a new function, no graphics primitives besides rects
+            and horizontal/vertical lines are written to best use this yet.
+*/
+// void Adafruit_SSD1331::writeFillRectPreclipped(int16_t x, int16_t y,
+//                                                      int16_t w, int16_t h,
+//                                                      uint16_t color) {
+// #if 1
+//   // For comparison/testing
+//   Adafruit_SPITFT::writeFillRectPreclipped(x, y, w, h, color);
+// #else
+//   split_color(color);
+  
+//   sendCommand(SSD1331_CMD_FILL); // enable fill
+//   sendCommand(0x01);
+//   sendCommand(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
+//   sendCommand(x); // starting column
+//   sendCommand(y); // starting row
+//   sendCommand(x + w); // finishing column
+//   sendCommand(y + h); // finishing row
+//   sendCommand(r);  // outline color
+//   sendCommand(g);
+//   sendCommand(b);
+//   sendCommand(r);  // fill color
+//   sendCommand(g);
+//   sendCommand(b);
+// #endif
+// }
+
+/**************************************************************************/
+/*!
+   @brief   Draw a rectangle with no fill color
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    w   Width in pixels
+    @param    h   Height in pixels
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
+void Adafruit_SSD1331::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                            uint16_t color) {
+  startWrite();
+
+  split_color(color);
+
+  SPI_DC_LOW();  // enter command mode
+  
+  spiWrite(SSD1331_CMD_FILL); // disble fill
+  spiWrite(0x00);
+  spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
+  spiWrite(x); // starting column
+  spiWrite(y); // starting row
+  spiWrite(x + w); // finishing column
+  spiWrite(y + h); // finishing row
+  spiWrite(r);  // outline color
+  spiWrite(g);
+  spiWrite(b);
+  spiWrite(r);  // fill color (unused, but the command apparently still requires it)
+  spiWrite(g);
+  spiWrite(b);
+
+  SPI_DC_HIGH(); // exit command mode
+
+  endWrite();
+}
+
+/**************************************************************************/
+/*!
+   @brief    Write a rectangle completely with one color, overwrite in
+   subclasses if startWrite is defined!
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    w   Width in pixels
+    @param    h   Height in pixels
+   @param    color 16-bit 5-6-5 Color to fill with
+*/
+/**************************************************************************/
+void Adafruit_SSD1331::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                                 uint16_t color) {
+  if ((x >= _width) || y >= _height)
+    return;
+
+  int16_t x1 = x + w;
+  int16_t y1 = y + h;
+
+  if (x1 >= _width)
+    x1 = _width - 1;
+  if (y1 >= _height)
+    y1 = _height - 1;
+
+  split_color(color);
+
+  SPI_DC_LOW();  // enter command mode
+  
+  spiWrite(SSD1331_CMD_FILL); // enable fill
+  spiWrite(0x01);
+  spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
+  spiWrite(x); // starting column
+  spiWrite(y); // starting row
+  spiWrite(x1); // finishing column
+  spiWrite(y1); // finishing row
+  spiWrite(r);  // outline color
+  spiWrite(g);
+  spiWrite(b);
+  spiWrite(r);  // fill color
+  spiWrite(g);
+  spiWrite(b);
+
+  SPI_DC_HIGH(); // exit command mode
+}
+
+/**************************************************************************/
+/*!
+   @brief    Draw a line
+    @param    x0  Start point x coordinate
+    @param    y0  Start point y coordinate
+    @param    x1  End point x coordinate
+    @param    y1  End point y coordinate
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
+void Adafruit_SSD1331::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+                            uint16_t color) {
+
+  split_color(color);
+
+  SPI_DC_LOW();  // enter command mode
+
+  spiWrite(SSD1331_CMD_DRAWLINE); // enter "draw rectangle" mode
+  spiWrite(x0); // starting column
+  spiWrite(y0); // starting row
+  spiWrite(x1); // finishing column
+  spiWrite(y1); // finishing row
+  spiWrite(r);  // color
+  spiWrite(g);
+  spiWrite(b);
+
+  SPI_DC_HIGH(); // exit command mode
+}
+#endif

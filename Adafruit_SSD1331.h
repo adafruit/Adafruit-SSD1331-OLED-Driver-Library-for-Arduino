@@ -8,6 +8,8 @@
 #include <Adafruit_SPITFT_Macros.h>
 #include <SPI.h>
 
+#define SSD1331_ENABLE_ACCELERATION 1
+
 /*!
  * @brief Select one of these defines to set the pixel color order
  */
@@ -25,6 +27,8 @@
 // SSD1331 Commands
 #define SSD1331_CMD_DRAWLINE 0x21      //!< Draw line
 #define SSD1331_CMD_DRAWRECT 0x22      //!< Draw rectangle
+#define SSD1331_CMD_COPY 0x23          //!< Copy
+#define SSD1331_CMD_CLEAR 0x25         //!< Clear
 #define SSD1331_CMD_FILL 0x26          //!< Fill enable/disable
 #define SSD1331_CMD_SETCOLUMN 0x15     //!< Set column address
 #define SSD1331_CMD_SETROW 0x75        //!< Set row adress
@@ -70,6 +74,19 @@ public:
 
   static const int16_t TFTWIDTH = 96;  ///< The width of the display
   static const int16_t TFTHEIGHT = 64; ///< The height of the display
+
+#ifdef SSD1331_ENABLE_ACCELERATION
+  virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                        uint16_t color);
+
+  // virtual void writePixel(int16_t x, int16_t y, uint16_t color);
+  virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                             uint16_t color);
+  // virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+  // virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+                         uint16_t color);
+#endif
 
 private:
 };
