@@ -197,52 +197,6 @@ uint8_t r = (color >> 10) & 0x3E;\
 uint8_t g = (color >> 5) & 0x3F;\
 uint8_t b = (color << 1) & 0x3E;
 
-
-/*!
-    @brief  A lower-level version of writeFillRect(). This version requires
-            all inputs are in-bounds, that width and height are positive,
-            and no part extends offscreen. NO EDGE CLIPPING OR REJECTION IS
-            PERFORMED. If higher-level graphics primitives are written to
-            handle their own clipping earlier in the drawing process, this
-            can avoid unnecessary function calls and repeated clipping
-            operations in the lower-level functions.
-    @param  x      Horizontal position of first corner. MUST BE WITHIN
-                   SCREEN BOUNDS.
-    @param  y      Vertical position of first corner. MUST BE WITHIN SCREEN
-                   BOUNDS.
-    @param  w      Rectangle width in pixels. MUST BE POSITIVE AND NOT
-                   EXTEND OFF SCREEN.
-    @param  h      Rectangle height in pixels. MUST BE POSITIVE AND NOT
-                   EXTEND OFF SCREEN.
-    @param  color  16-bit fill color in '565' RGB format.
-    @note   This is a new function, no graphics primitives besides rects
-            and horizontal/vertical lines are written to best use this yet.
-*/
-// void Adafruit_SSD1331::writeFillRectPreclipped(int16_t x, int16_t y,
-//                                                      int16_t w, int16_t h,
-//                                                      uint16_t color) {
-// #if 1
-//   // For comparison/testing
-//   Adafruit_SPITFT::writeFillRectPreclipped(x, y, w, h, color);
-// #else
-//   split_color(color);
-  
-//   sendCommand(SSD1331_CMD_FILL); // enable fill
-//   sendCommand(0x01);
-//   sendCommand(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
-//   sendCommand(x); // starting column
-//   sendCommand(y); // starting row
-//   sendCommand(x + w); // finishing column
-//   sendCommand(y + h); // finishing row
-//   sendCommand(r);  // outline color
-//   sendCommand(g);
-//   sendCommand(b);
-//   sendCommand(r);  // fill color
-//   sendCommand(g);
-//   sendCommand(b);
-// #endif
-// }
-
 /**************************************************************************/
 /*!
    @brief   Draw a rectangle with no fill color
@@ -255,6 +209,18 @@ uint8_t b = (color << 1) & 0x3E;
 /**************************************************************************/
 void Adafruit_SSD1331::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
                             uint16_t color) {
+  if (x < 0 || x >= _width || 
+      y < 0 || y >= _height)
+    return;
+
+  int16_t x1 = x + w;
+  int16_t y1 = y + h;
+
+  if (x1 >= _width)
+    x1 = _width - 1;
+  if (y1 >= _height)
+    y1 = _height - 1;
+
   startWrite();
 
   split_color(color);
@@ -266,8 +232,8 @@ void Adafruit_SSD1331::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
   spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
   spiWrite(x); // starting column
   spiWrite(y); // starting row
-  spiWrite(x + w); // finishing column
-  spiWrite(y + h); // finishing row
+  spiWrite(x1); // finishing column
+  spiWrite(y1); // finishing row
   spiWrite(r);  // outline color
   spiWrite(g);
   spiWrite(b);
@@ -293,7 +259,8 @@ void Adafruit_SSD1331::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
 /**************************************************************************/
 void Adafruit_SSD1331::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
                                  uint16_t color) {
-  if ((x >= _width) || y >= _height)
+  if (x < 0 || x >= _width || 
+      y < 0 || y >= _height)
     return;
 
   int16_t x1 = x + w;
@@ -337,6 +304,14 @@ void Adafruit_SSD1331::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 /**************************************************************************/
 void Adafruit_SSD1331::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
                             uint16_t color) {
+
+  // Simple, dumb clip. If either point is outside the screen, don't draw.
+  if (x0 < 0 || x0 >= _width || 
+      x1 < 0 || x1 >= _width || 
+      y0 < 0 || y0 >= _height || 
+      y1 < 0 || y1 >= _height) {
+    return;
+  }
 
   split_color(color);
 
