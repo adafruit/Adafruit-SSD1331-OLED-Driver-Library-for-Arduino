@@ -146,7 +146,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
 /**************************************************************************/
 Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t mosi,
                                    int8_t sclk, int8_t rst)
-    : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, mosi, sclk, rst, -1) {}
+    : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, mosi, sclk, rst, -1) , scroll(false) {}
 
 /**************************************************************************/
 /*!
@@ -157,7 +157,7 @@ Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t mosi,
 */
 /**************************************************************************/
 Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t rst)
-    : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {}
+    : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) , scroll(false) {}
 
 /**************************************************************************/
 /*!
@@ -173,11 +173,11 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
                                    int8_t rst)
     :
 #if defined(ESP8266)
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, cs, dc, rst) {
+      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, cs, dc, rst)
 #else
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst) {
+      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst)
 #endif
-}
+, scroll(false){}
 
 /**************************************************************************/
 /*!
@@ -271,25 +271,54 @@ void Adafruit_SSD1331::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
   if (y1 >= _height)
     y1 = _height - 1;
 
-  split_color(color);
-
   SPI_DC_LOW();  // enter command mode
-  
-  spiWrite(SSD1331_CMD_FILL); // enable fill
-  spiWrite(0x01);
-  spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
-  spiWrite(x); // starting column
-  spiWrite(y); // starting row
-  spiWrite(x1); // finishing column
-  spiWrite(y1); // finishing row
-  spiWrite(r);  // outline color
-  spiWrite(g);
-  spiWrite(b);
-  spiWrite(r);  // fill color
-  spiWrite(g);
-  spiWrite(b);
+
+  if (color == 0)
+  {
+    // if filling zero, we can use the less expensive clear command (writes 5 bytes over SPI).
+    spiWrite(SSD1331_CMD_CLEAR);
+    spiWrite(x); // starting column
+    spiWrite(y); // starting row
+    spiWrite(x1); // finishing column
+    spiWrite(y1); // finishing row
+  }
+  else if (x == x1 || y == y1)
+  {
+    // If the rect is 1 pixel wide or high, we can use the less expensive line-drawing command (writes 8 bytes over SPI)
+    writeLine(x, y, x1, y1, color);
+  }
+  else
+  {
+    // Use the actual fill-rect command (13 bytes over SPI)
+    split_color(color);
+    
+    spiWrite(SSD1331_CMD_FILL); // enable fill
+    spiWrite(0x01);
+    spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
+    spiWrite(x); // starting column
+    spiWrite(y); // starting row
+    spiWrite(x1); // finishing column
+    spiWrite(y1); // finishing row
+    spiWrite(r);  // outline color
+    spiWrite(g);
+    spiWrite(b);
+    spiWrite(r);  // fill color
+    spiWrite(g);
+    spiWrite(b);
+  }
 
   SPI_DC_HIGH(); // exit command mode
+}
+
+void Adafruit_SSD1331::writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
+{
+  // writeLine() is the fastest way to do this.
+  writeLine(x, y, x, y + h, color);
+}
+void Adafruit_SSD1331::writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
+{
+  // writeLine() is the fastest way to do this.
+  writeLine(x, y, x + w, y, color);
 }
 
 /**************************************************************************/
@@ -328,4 +357,98 @@ void Adafruit_SSD1331::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
 
   SPI_DC_HIGH(); // exit command mode
 }
+
+void Adafruit_SSD1331::writePixel(int16_t x, int16_t y, uint16_t color) {
+
+  // Using the Draw Line command writes 8 bytes over SPI. 
+  // Setting the window and pushing one pixel would also use 8, split across multiple transactions.
+  // This is something like 4x faster for text drawing, etc.
+  writeLine(x, y, x, y, color);
+}
+
+void Adafruit_SSD1331::copyBits(int16_t x, int16_t y, int16_t w, int16_t h,
+              int16_t dx, int16_t dy, bool invert)
+{
+  // Serial.printf("copyBits inputs: %d %d %d %d %d %d\r\n", x, y, w, h, dx, dy);
+
+  // Clip such that both source and destination are completely contained within the screen bounds.
+  int min_x = min(x, dx);
+  int max_x = max(x, dx) + w;
+  int clip = - min_x;
+  if (clip > 0) {
+    x += clip;
+    dx += clip;
+    w -= clip;
+  }
+  clip = max_x - (_width - 1);
+  if (clip > 0) {
+    w -= clip;
+  }
+  if (w <= 0){
+    // Empty rect
+    return;
+  }
+
+  int min_y = min(y, dy);
+  int max_y = max(y, dy) + h;
+  clip = -min_y;
+  if (clip > 0) {
+    y += clip;
+    dy += clip;
+    h -= clip;
+  }
+  clip = max_y - (_height - 1);
+  if (clip > 0) {
+    h -= clip;
+  }
+  if (h <= 0){
+    // Empty rect
+    return;
+  }
+
+  // Serial.printf("copyBits clipped: %d %d %d %d %d %d\r\n", x, y, w, h, dx, dy);
+
+  startWrite();
+
+  SPI_DC_LOW();  // enter command mode
+  
+  spiWrite(SSD1331_CMD_FILL); // configure invert
+  spiWrite(invert?0x10:0x00);
+  spiWrite(SSD1331_CMD_COPY); // enter "draw rectangle" mode
+  spiWrite(x); // starting column
+  spiWrite(y); // starting row
+  spiWrite(x + w); // finishing column
+  spiWrite(y + h); // finishing row
+  spiWrite(dx); // destination row
+  spiWrite(dy); // destination column
+  
+  SPI_DC_HIGH(); // exit command mode
+
+  endWrite();
+
+  // It seems that the copy command sometimes takes long enough that it may be interrupted by subsequent commands, 
+  // and corrupt the data as a result.
+  // Calculate a delay based on the number of pixels blitted.
+  // For a full-screen blit, we want to delay about 700us. 
+  // A full-screen blit is 96 * 64 = 6144 pixels.
+  // Dividing this by 8 gives us 768us, which is close enough.
+  int delay = (w * h) >> 3;
+  delayMicroseconds(delay);
+}
+
+size_t Adafruit_SSD1331::write(uint8_t c) {
+  // If scrolling is enabled and the character about to be drawn would be partly below the bottom of the screen, scroll up.
+  if (scroll) {
+    int line_height = textsize_y * (gfxFont?(uint8_t)pgm_read_byte(&gfxFont->yAdvance):8);
+    if (cursor_y + line_height >= _height) {
+      copyBits(0, 0, _width, _height, 0, -line_height);
+      fillRect(0, _height - line_height, _width, line_height, 0);
+      cursor_y -= line_height;
+    }
+  }
+
+  // call through to superclass for the actual drawing.
+  return Adafruit_GFX::write(c);
+}
+
 #endif

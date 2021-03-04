@@ -8,7 +8,7 @@
 #include <Adafruit_SPITFT_Macros.h>
 #include <SPI.h>
 
-#define SSD1331_ENABLE_ACCELERATION 1
+#define SSD1331_ENABLE_ACCELERATION
 
 /*!
  * @brief Select one of these defines to set the pixel color order
@@ -75,18 +75,30 @@ public:
   static const int16_t TFTWIDTH = 96;  ///< The width of the display
   static const int16_t TFTHEIGHT = 64; ///< The height of the display
 
+  void setTextScroll(bool s) { scroll = s; }
+
 #ifdef SSD1331_ENABLE_ACCELERATION
   virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
                         uint16_t color);
 
-  // virtual void writePixel(int16_t x, int16_t y, uint16_t color);
+  virtual void writePixel(int16_t x, int16_t y, uint16_t color);
   virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
                              uint16_t color);
-  // virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  // virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+  virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
   virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
                          uint16_t color);
+
+  // Does a bitblt on the device.
+  void copyBits(int16_t x, int16_t y, int16_t w, int16_t h,
+                int16_t dx, int16_t dy, bool invert = false);
+
+  // Overriding to do full-screen scrolling when text is written past the last line.
+  virtual size_t write(uint8_t);
 #endif
+
+protected:
+  bool scroll;
 
 private:
 };
