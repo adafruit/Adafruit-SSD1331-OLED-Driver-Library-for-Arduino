@@ -78,6 +78,7 @@ public:
   void setTextScroll(bool s) { scroll = s; }
 
 #ifdef SSD1331_ENABLE_ACCELERATION
+  virtual void setRotation(uint8_t r);
   virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
                         uint16_t color);
 

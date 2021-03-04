@@ -173,9 +173,9 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
                                    int8_t rst)
     :
 #if defined(ESP8266)
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, cs, dc, rst)
+      Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst)
 #else
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst)
+      Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, spi, cs, dc, rst)
 #endif
 , scroll(false){}
 
@@ -196,6 +196,11 @@ void Adafruit_SSD1331::enableDisplay(boolean enable) {
 uint8_t r = (color >> 10) & 0x3E;\
 uint8_t g = (color >> 5) & 0x3F;\
 uint8_t b = (color << 1) & 0x3E;
+
+void Adafruit_SSD1331::setRotation(uint8_t r)
+{
+  // Rotation not supported -- do nothing.
+}
 
 /**************************************************************************/
 /*!
@@ -259,17 +264,22 @@ void Adafruit_SSD1331::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
 /**************************************************************************/
 void Adafruit_SSD1331::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
                                  uint16_t color) {
-  if (x < 0 || x >= _width || 
-      y < 0 || y >= _height)
-    return;
-
   int16_t x1 = x + w;
   int16_t y1 = y + h;
 
+  if (x1 < 0 || x >= _width || y1 < 0 || y >= _height)
+    return;
+
+  if (x < 0)
+    x = 0;
   if (x1 >= _width)
     x1 = _width - 1;
+  if (y < 0)
+    y = 0;
   if (y1 >= _height)
     y1 = _height - 1;
+
+  // Serial.printf("clipped %d %d %d %d - %d %d\r\n", x, y, x1, y1, _width, _height);
 
   SPI_DC_LOW();  // enter command mode
 
@@ -429,10 +439,10 @@ void Adafruit_SSD1331::copyBits(int16_t x, int16_t y, int16_t w, int16_t h,
   // It seems that the copy command sometimes takes long enough that it may be interrupted by subsequent commands, 
   // and corrupt the data as a result.
   // Calculate a delay based on the number of pixels blitted.
-  // For a full-screen blit, we want to delay about 700us. 
+  // For a full-screen blit, we want to delay somewhere above 1000us. 
   // A full-screen blit is 96 * 64 = 6144 pixels.
-  // Dividing this by 8 gives us 768us, which is close enough.
-  int delay = (w * h) >> 3;
+  // Dividing this by 4 gives us 1536us, which is close enough.
+  int delay = (w * h) >> 2;
   delayMicroseconds(delay);
 }
 
