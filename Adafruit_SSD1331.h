@@ -8,7 +8,8 @@
 #include <Adafruit_SPITFT_Macros.h>
 #include <SPI.h>
 
-#define SSD1331_ENABLE_ACCELERATION
+// Enable copyBits and setTextScroll 
+#define SSD1331_EXTRAS
 
 /*!
  * @brief Select one of these defines to set the pixel color order
@@ -75,14 +76,14 @@ public:
   static const int16_t TFTWIDTH = 96;  ///< The width of the display
   static const int16_t TFTHEIGHT = 64; ///< The height of the display
 
+#ifdef SSD1331_EXTRAS
+  // If this is set to true, the screen will scroll up when text is printed off the bottom.
   void setTextScroll(bool s) { scroll = s; }
+#endif
 
-#ifdef SSD1331_ENABLE_ACCELERATION
   virtual void setRotation(uint8_t r);
-  virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
-                        uint16_t color);
+  virtual void invertDisplay(bool i);
 
-  virtual void writePixel(int16_t x, int16_t y, uint16_t color);
   virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
                              uint16_t color);
   virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
@@ -90,6 +91,18 @@ public:
   virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
                          uint16_t color);
 
+  virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
+  virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+  virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                        uint16_t color);
+  virtual void fillScreen(uint16_t color);
+  virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+                        uint16_t color);
+  virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                        uint16_t color);
+
+#ifdef SSD1331_EXTRAS
   // Does a bitblt on the device.
   void copyBits(int16_t x, int16_t y, int16_t w, int16_t h,
                 int16_t dx, int16_t dy, bool invert = false);
@@ -102,4 +115,6 @@ protected:
   bool scroll;
 
 private:
+  void spiWriteXY(int16_t x, int16_t y);
+  void spiWriteColor(int16_t color);
 };

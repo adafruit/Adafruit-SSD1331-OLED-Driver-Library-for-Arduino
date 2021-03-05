@@ -56,60 +56,136 @@ void setup(void) {
   display.begin();
 
   Serial.println("init");
-  uint16_t time = millis();
-  display.fillScreen(BLACK);
-  time = millis() - time;
+}
 
-  Serial.println(time, DEC);
+void loop(){
+  for (int i = 0; i < 4; i++)
+  {
+    display.setRotation(i);
+    all_tests();
+  }
+}
+
+void all_tests() {
+  Serial.printf("Running all tests at rotation %d\r\n", display.getRotation());
+  unsigned long time = millis();
+  display.fillScreen(BLACK);
+  Serial.printf("Clear screen took %ldms\r\n", millis() - time);
   delay(500);
 
+  time = millis();
   lcdTestPattern();
+  Serial.printf("Test pattern took %ldms\r\n", millis() - time);
   delay(1000);
+  scroll_off();
 
+  // scrolling small text
+  time = millis();
   display.fillScreen(BLACK);
   display.setCursor(0,0);
-  display.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa");
-  delay(1000);
+#ifdef SSD1331_EXTRAS
+  display.setTextScroll(true);
+#endif
+  for (int i = 0; i < 10; i++) {
+    display.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa");
+  }
+  time = millis() - time;
+  Serial.printf("Small text scrolling test took %ldms\r\n", time);
+  display.setTextColor(GREEN);
+  display.printf("\r\n-> %ldms", time);
+#ifdef SSD1331_EXTRAS
+  display.setTextScroll(false);
+#endif
+  delay(2000);
+  scroll_off();
+
+  // scrolling big text
+  time = millis();
+  display.fillScreen(BLACK);
+  display.setCursor(0,0);
+#ifdef SSD1331_EXTRAS
+  display.setTextScroll(true);
+#endif
+  display.setTextSize(2);
+  display.setTextColor(BLUE);
+  for (int i = 0; i < 10; i++) {
+    display.print("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur adipiscing ante sed nibh tincidunt feugiat. Maecenas enim massa");
+  }
+  time = millis() - time;
+  Serial.printf("Large text scrolling test took %ldms\r\n", time);
+  display.setTextColor(GREEN);
+  display.printf("\r\n%ldms", time);
+#ifdef SSD1331_EXTRAS
+  display.setTextScroll(false);
+#endif
+  display.setTextSize(1);
+  delay(2000);
+  scroll_off();
 
   // tft print function!
+  time = millis();
   tftPrintTest();
+  // The print test contains a 1500ms delay.
+  Serial.printf("Print test took %ldms\r\n", (millis() - time) - 1500);
   delay(2000);
-
+  scroll_off();
+  
   //a single pixel
   display.drawPixel(display.width()/2, display.height()/2, GREEN);
   delay(500);
+  scroll_off();
 
   // line draw test
+  time = millis();
   testlines(YELLOW);
+  // The lines test contains four 250ms delays.
+  Serial.printf("Lines test took %ldms\r\n", (millis() - time) - 1000);
   delay(500);
+  scroll_off();
 
   // optimized lines
+  time = millis();
   testfastlines(RED, BLUE);
+  Serial.printf("Optimized Lines test took %ldms\r\n", millis() - time);
   delay(500);
+  scroll_off();
 
+  time = millis();
   testdrawrects(GREEN);
-  delay(1000);
+  Serial.printf("Drawrects test took %ldms\r\n", millis() - time);
+  delay(500);
+  scroll_off();
 
+  time = millis();
   testfillrects(YELLOW, MAGENTA);
-  delay(1000);
+  Serial.printf("Fillrects test took %ldms\r\n", millis() - time);
+  delay(500);
+  scroll_off();
 
+  time = millis();
   display.fillScreen(BLACK);
   testfillcircles(10, BLUE);
   testdrawcircles(10, WHITE);
-  delay(1000);
+  Serial.printf("Circles test took %ldms\r\n", millis() - time);
+  delay(500);
+  scroll_off();
 
+  time = millis();
   testroundrects();
+  Serial.printf("Round rects test took %ldms\r\n", millis() - time);
   delay(500);
+  scroll_off();
 
+  time = millis();
   testtriangles();
+  Serial.printf("Triangles test took %ldms\r\n", millis() - time);
   delay(500);
+  scroll_off();
 
-  Serial.println("done");
+  Serial.printf("*** done ***\r\n\r\n");
   delay(1000);
 }
 
-void loop() {
-}
 
 void testlines(uint16_t color) {
    display.fillScreen(BLACK);
@@ -119,6 +195,7 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(0, 0, display.width()-1, y, color);
    }
+   delay(250);
 
    display.fillScreen(BLACK);
    for (int16_t x=0; x < display.width()-1; x+=6) {
@@ -127,6 +204,7 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(display.width()-1, 0, 0, y, color);
    }
+   delay(250);
 
    // To avoid ESP8266 watchdog timer resets when not using the hardware SPI pins
    delay(0);
@@ -138,6 +216,7 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(0, display.height()-1, display.width()-1, y, color);
    }
+   delay(250);
 
    display.fillScreen(BLACK);
    for (int16_t x=0; x < display.width()-1; x+=6) {
@@ -146,6 +225,7 @@ void testlines(uint16_t color) {
    for (int16_t y=0; y < display.height()-1; y+=6) {
      display.drawLine(display.width()-1, display.height()-1, 0, y, color);
    }
+   delay(250);
 
 }
 
@@ -174,14 +254,16 @@ void testfastlines(uint16_t color1, uint16_t color2) {
 
 void testdrawrects(uint16_t color) {
  display.fillScreen(BLACK);
- for (int16_t x=0; x < display.height()-1; x+=6) {
+ int size = ((display.height() > display.width())?display.width():display.height()) - 1;
+ for (int16_t x=0; x < size; x+=6) {
    display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color);
  }
 }
 
 void testfillrects(uint16_t color1, uint16_t color2) {
  display.fillScreen(BLACK);
- for (int16_t x=display.height()-1; x > 6; x-=6) {
+ int size = ((display.height() > display.width())?display.width():display.height()) - 1;
+ for (int16_t x=size; x > 6; x-=6) {
    display.fillRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color1);
    display.drawRect((display.width()-1)/2 -x/2, (display.height()-1)/2 -x/2 , x, x, color2);
  }
@@ -304,23 +386,23 @@ void mediabuttons() {
 void lcdTestPattern(void)
 {
   uint8_t w,h;
-  display.setAddrWindow(0, 0, 96, 64);
-
-  for (h = 0; h < 64; h++) {
-    for (w = 0; w < 96; w++) {
-      if (w > 83) {
+  display.startWrite();
+  int stripe_width = (display.width() / 8);
+  for (h = 0; h < display.height() - 1; h++) {
+    for (w = 0; w < display.width() - 1; w++) {
+      if (w > stripe_width * 7) {
         display.writePixel(w, h, WHITE);
-      } else if (w > 71) {
+      } else if (w > stripe_width * 6) {
         display.writePixel(w, h, BLUE);
-      } else if (w > 59) {
+      } else if (w > stripe_width * 5) {
         display.writePixel(w, h, GREEN);
-      } else if (w > 47) {
+      } else if (w > stripe_width * 4) {
         display.writePixel(w, h, CYAN);
-      } else if (w > 35) {
+      } else if (w > stripe_width * 3) {
         display.writePixel(w, h, RED);
-      } else if (w > 23) {
+      } else if (w > stripe_width * 2) {
         display.writePixel(w, h, MAGENTA);
-      } else if (w > 11) {
+      } else if (w > stripe_width) {
         display.writePixel(w, h, YELLOW);
       } else {
         display.writePixel(w, h, BLACK);
@@ -328,4 +410,62 @@ void lcdTestPattern(void)
     }
   }
   display.endWrite();
+}
+
+void scroll_off()
+{
+#ifdef SSD1331_EXTRAS
+  int width = display.width();
+  int height = display.height();
+  int scroll_amount = 1;
+  int xscroll = 0;
+  int yscroll = 0;
+  int count = 0;
+  int clearx = 0;
+  int cleary = 0;
+  int clearw = width;
+  int clearh = height;
+  static int direction = 0;
+
+  switch(direction)
+  {
+  case 0:
+    // scroll up
+    yscroll = -scroll_amount;
+    count = height / scroll_amount;
+    cleary = (height - 1) - scroll_amount;
+    clearh = scroll_amount;
+  break;
+  case 1:
+    // scroll right
+    xscroll = scroll_amount;
+    count = width / scroll_amount;
+    clearw = scroll_amount;
+  break;
+  case 2:
+    // scroll down
+    yscroll = scroll_amount;
+    count = height / scroll_amount;
+    clearh = scroll_amount;
+  break;
+  case 3:
+    // scroll left
+    xscroll = -scroll_amount;
+    count = width / scroll_amount;
+    clearx = (width - 1) - scroll_amount;
+    clearw = scroll_amount;
+  break;
+  }
+
+  for (int i = 0; i < count; i++)
+  {
+    display.copyBits(0, 0, width, height, xscroll, yscroll);
+    display.fillRect(clearx, cleary, clearw, clearh, 0);
+  }
+
+  // Increment the scroll direction each time.
+  direction += 1;
+  direction &= 0x03;
+  delay(500);
+#endif
 }
