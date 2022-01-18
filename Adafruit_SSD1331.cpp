@@ -293,7 +293,7 @@ void Adafruit_SSD1331::writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
     // Use the actual fill-rect command (13 bytes over SPI)
     spiWrite(SSD1331_CMD_FILL); // enable fill
     spiWrite(0x01);
-    spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
+    spiWrite(SSD1331_CMD_DRAWRECT); // "draw rectangle" command
     spiWriteXY(x, y); // starting column/row
     spiWriteXY(x1 - 1, y1 - 1); // finishing column/row
     spiWriteColor(color);
@@ -336,17 +336,20 @@ void Adafruit_SSD1331::writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t 
 void Adafruit_SSD1331::writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
                             uint16_t color) {
 
-  // Simple, dumb clip. If either point is outside the screen, don't draw.
-  if (x0 < 0 || x0 >= _width || 
-      x1 < 0 || x1 >= _width || 
-      y0 < 0 || y0 >= _height || 
-      y1 < 0 || y1 >= _height) {
-    return;
-  }
-
+  // Simple clip that gives incorrect results for diagonal lines,
+  // but will at least clip horizontal/vertical lines correctly.
+  if (x0 < 0) x0 = 0;
+  else if (x0 >= _width) x0 = _width - 1;
+  if (x1 < 0) x1 = 0;
+  else if (x1 >= _width) x1 = _width - 1;
+  if (y0 < 0) y0 = 0;
+  else if (y0 >= _height) y0 = _height - 1;
+  if (y1 < 0) y1 = 0;
+  else if (y1 >= _height) y1 = _height - 1;
+  
   SPI_DC_LOW();  // enter command mode
 
-  spiWrite(SSD1331_CMD_DRAWLINE); // enter "draw rectangle" mode
+  spiWrite(SSD1331_CMD_DRAWLINE); // "draw line" command
   spiWriteXY(x0, y0); // starting column/row
   spiWriteXY(x1, y1); // finishing column/row
   spiWriteColor(color);
@@ -470,7 +473,7 @@ void Adafruit_SSD1331::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
   
   spiWrite(SSD1331_CMD_FILL); // disble fill
   spiWrite(0x00);
-  spiWrite(SSD1331_CMD_DRAWRECT); // enter "draw rectangle" mode
+  spiWrite(SSD1331_CMD_DRAWRECT); // "draw rectangle" command
   spiWriteXY(x, y); // starting column/row
   spiWriteXY(x1 - 1, y1 - 1); // finishing column/row
   spiWriteColor(color);
@@ -527,7 +530,7 @@ void Adafruit_SSD1331::copyBits(int16_t x, int16_t y, int16_t w, int16_t h,
   
   spiWrite(SSD1331_CMD_FILL); // configure invert
   spiWrite(invert?0x10:0x00);
-  spiWrite(SSD1331_CMD_COPY); // enter "draw rectangle" mode
+  spiWrite(SSD1331_CMD_COPY); // bitblt command
   spiWriteXY(x, y); // starting column/row
   spiWriteXY(x + w - 1, y + h - 1); // finishing column/row
   spiWriteXY(dx, dy); // destination column/row
