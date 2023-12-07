@@ -2,6 +2,9 @@
  * @file Adafruit_SSD1331.h
  */
 
+#ifndef ADAFRUIT_SSD1331_H
+#define ADAFRUIT_SSD1331_H
+
 #include "Arduino.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SPITFT.h>
@@ -73,3 +76,5 @@ public:
 
 private:
 };
+
+#endif // ADAFRUIT_SSD1331_H
