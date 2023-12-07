@@ -8,6 +8,9 @@
 #include <Adafruit_SPITFT_Macros.h>
 #include <SPI.h>
 
+// Enable copyBits and setTextScroll 
+#define SSD1331_EXTRAS
+
 /*!
  * @brief Select one of these defines to set the pixel color order
  */
@@ -25,6 +28,8 @@
 // SSD1331 Commands
 #define SSD1331_CMD_DRAWLINE 0x21      //!< Draw line
 #define SSD1331_CMD_DRAWRECT 0x22      //!< Draw rectangle
+#define SSD1331_CMD_COPY 0x23          //!< Copy
+#define SSD1331_CMD_CLEAR 0x25         //!< Clear
 #define SSD1331_CMD_FILL 0x26          //!< Fill enable/disable
 #define SSD1331_CMD_SETCOLUMN 0x15     //!< Set column address
 #define SSD1331_CMD_SETROW 0x75        //!< Set row adress
@@ -71,5 +76,45 @@ public:
   static const int16_t TFTWIDTH = 96;  ///< The width of the display
   static const int16_t TFTHEIGHT = 64; ///< The height of the display
 
+#ifdef SSD1331_EXTRAS
+  // If this is set to true, the screen will scroll up when text is printed off the bottom.
+  void setTextScroll(bool s) { scroll = s; }
+#endif
+
+  virtual void setRotation(uint8_t r);
+  virtual void invertDisplay(bool i);
+
+  virtual void writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                             uint16_t color);
+  virtual void writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+  virtual void writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  virtual void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+                         uint16_t color);
+
+  virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
+  virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+  virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                        uint16_t color);
+  virtual void fillScreen(uint16_t color);
+  virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+                        uint16_t color);
+  virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                        uint16_t color);
+
+#ifdef SSD1331_EXTRAS
+  // Does a bitblt on the device.
+  void copyBits(int16_t x, int16_t y, int16_t w, int16_t h,
+                int16_t dx, int16_t dy, bool invert = false);
+
+  // Overriding to do full-screen scrolling when text is written past the last line.
+  virtual size_t write(uint8_t);
+#endif
+
+protected:
+  bool scroll;
+
 private:
+  void spiWriteXY(int16_t x, int16_t y);
+  void spiWriteColor(int16_t color);
 };

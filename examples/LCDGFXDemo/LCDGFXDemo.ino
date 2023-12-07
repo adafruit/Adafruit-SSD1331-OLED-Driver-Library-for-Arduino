@@ -1,3 +1,4 @@
+// LCDGFXDemo.ino
 // GFX Demo for multiple backends
 // By Marc MERLIN <marc_soft@merlins.org>
 // Contains code (c) Adafruit, license BSD
@@ -6,7 +7,8 @@
 #include <Adafruit_SSD1331.h>
 #include <SPI.h>
 
-#define show endWrite
+// On Adafruit_SSD1331, turn show into a no-op.
+#define show width
 #define clear() fillScreen(0)
 #define mw 96
 #define mh 64
@@ -467,30 +469,33 @@ void display_scrollText() {
     display.setTextSize(1);
     display.setRotation(0);
     for (int8_t x=7; x>=-42; x--) {
-	display.clear();
-	display.setCursor(x,0);
-	display.setTextColor(LED_GREEN_HIGH);
-	display.print("Hello");
-	if (mh>11) {
-	    display.setCursor(-20-x,mh-7);
-	    display.setTextColor(LED_ORANGE_HIGH);
-	    display.print("World");
-	}
-	display.show();
-      // delay(50);
+        display.clear();
+        display.setCursor(x,0);
+        display.setTextColor(LED_GREEN_HIGH);
+        display.print("Hello");
+        if (mh>11) {
+            display.setCursor(-20-x,mh-7);
+            display.setTextColor(LED_ORANGE_HIGH);
+            display.print("World");
+        }
+        display.show();
+        delay(50);
     }
 
-    display.setRotation(1);
-    display.setTextSize(size);
-    display.setTextColor(LED_BLUE_HIGH);
-    for (int16_t x=8*size; x>=-6*8*size; x--) {
-	display.clear();
-	display.setCursor(x,mw/2-size*4);
-	display.print("Rotate");
-	display.show();
-	// note that on a big array the refresh rate from show() will be slow enough that
-	// the delay become irrelevant. This is already true on a 32x32 array.
-       // delay(50/size);
+    for (int i = 0; i < 4; i++)
+    {
+        display.setRotation(i);
+        display.setTextSize(size);
+        display.setTextColor(LED_BLUE_HIGH);
+        for (int16_t x=8*size; x>=-6*8*size; x--) {
+            display.clear();
+            display.setCursor(x,mw/2-size*4);
+            display.printf("Rotate %d", i);
+            display.show();
+            // note that on a big array the refresh rate from show() will be slow enough that
+            // the delay become irrelevant. This is already true on a 32x32 array.
+            delay(50/size);
+        }
     }
     display.setRotation(0);
     display.setCursor(0,0);
