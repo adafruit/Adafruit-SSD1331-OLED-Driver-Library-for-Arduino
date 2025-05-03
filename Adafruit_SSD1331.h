@@ -5,11 +5,8 @@
 #ifndef ADAFRUIT_SSD1331_H
 #define ADAFRUIT_SSD1331_H
 
-#include "Arduino.h"
-#include <Adafruit_GFX.h>
+
 #include <Adafruit_SPITFT.h>
-#include <Adafruit_SPITFT_Macros.h>
-#include <SPI.h>
 
 /*!
  * @brief Select one of these defines to set the pixel color order
@@ -18,7 +15,7 @@
 // #define SSD1331_COLORORDER_BGR
 
 #if defined SSD1331_COLORORDER_RGB && defined SSD1331_COLORORDER_BGR
-#error "RGB and BGR can not both be defined for SSD1331_COLORODER."
+#error "RGB and BGR can not both be defined for SSD1331_COLORORDER."
 #endif
 
 // Timing Delays

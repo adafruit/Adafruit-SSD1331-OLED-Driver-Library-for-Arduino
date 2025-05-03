@@ -26,10 +26,11 @@
  */
 
 #include "Adafruit_SSD1331.h"
-#include "pins_arduino.h"
-#include "wiring_private.h"
 
 /***********************************/
+
+#define ssd1331_swap(a, b)                                                     \
+  (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b))) ///< No-temp-var swap operation
 
 /*!
   @brief   SPI displays set an address window rectangle for blitting pixels
@@ -40,42 +41,39 @@
 */
 void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w,
                                      uint16_t h) {
-
   uint8_t x1 = x;
   uint8_t y1 = y;
-  if (x1 > 95)
-    x1 = 95;
-  if (y1 > 63)
-    y1 = 63;
+  if (x1 > TFTWIDTH - 1)
+    x1 = TFTWIDTH - 1;
+  if (y1 > TFTHEIGHT - 1)
+    y1 = TFTHEIGHT - 1;
 
   uint8_t x2 = (x + w - 1);
   uint8_t y2 = (y + h - 1);
-  if (x2 > 95)
-    x2 = 95;
-  if (y2 > 63)
-    y2 = 63;
+  if (x2 > TFTWIDTH - 1)
+    x2 = TFTWIDTH - 1;
+  if (y2 > TFTHEIGHT - 1)
+    y2 = TFTHEIGHT - 1;
 
   if (x1 > x2) {
-    uint8_t t = x2;
-    x2 = x1;
-    x1 = t;
+    ssd1331_swap(x1, x2);
   }
   if (y1 > y2) {
-    uint8_t t = y2;
-    y2 = y1;
-    y1 = t;
+    ssd1331_swap(y1, y2);
   }
 
-  sendCommand(0x15); // Column addr set
-  sendCommand(x1);
-  sendCommand(x2);
+  SPI_DC_LOW();          // Command mode
 
-  sendCommand(0x75); // Column addr set
-  sendCommand(y1);
-  sendCommand(y2);
+  spiWrite(SSD1331_CMD_SETCOLUMN); // Column addr set
+  spiWrite(x1);
+  spiWrite(x2);
 
-  startWrite();
+  spiWrite(SSD1331_CMD_SETROW);     // Row addr set
+  spiWrite(y1);
+  spiWrite(y2);
+  SPI_DC_HIGH();          // Exit Command mode
 }
+
 
 /**************************************************************************/
 /*!
