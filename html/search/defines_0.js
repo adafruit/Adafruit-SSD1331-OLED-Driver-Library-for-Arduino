@@ -30,5 +30,6 @@ var searchData=
   ['ssd1331_5fcmd_5fvcomh',['SSD1331_CMD_VCOMH',['../_adafruit___s_s_d1331_8h.html#acac3227a37e7a75c5b69c8f0cf24414f',1,'Adafruit_SSD1331.h']]],
   ['ssd1331_5fcolororder_5frgb',['SSD1331_COLORORDER_RGB',['../_adafruit___s_s_d1331_8h.html#acc913eec0d9199bbddefc760057a20a8',1,'Adafruit_SSD1331.h']]],
   ['ssd1331_5fdelays_5fhwfill',['SSD1331_DELAYS_HWFILL',['../_adafruit___s_s_d1331_8h.html#a31ad94011716ee30d98dbdf19fca0089',1,'Adafruit_SSD1331.h']]],
-  ['ssd1331_5fdelays_5fhwline',['SSD1331_DELAYS_HWLINE',['../_adafruit___s_s_d1331_8h.html#ab70063b313a104474b82ff372a5aa3bb',1,'Adafruit_SSD1331.h']]]
+  ['ssd1331_5fdelays_5fhwline',['SSD1331_DELAYS_HWLINE',['../_adafruit___s_s_d1331_8h.html#ab70063b313a104474b82ff372a5aa3bb',1,'Adafruit_SSD1331.h']]],
+  ['ssd1331_5fswap',['ssd1331_swap',['../_adafruit___s_s_d1331_8cpp.html#a307dfee7afaa444b0763dec2b7df3a3f',1,'Adafruit_SSD1331.cpp']]]
 ];

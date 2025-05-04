@@ -94,6 +94,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad53d0176cae0f1a89f804f34bd5b4de9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___s_s_d1331.html#ad53d0176cae0f1a89f804f34bd5b4de9">begin</a> (uint32_t begin=8000000)</td></tr>
 <tr class="memdesc:ad53d0176cae0f1a89f804f34bd5b4de9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize SSD1331 chip Connects to the SSD1331 over SPI and sends initialization procedure commands.  <a href="#ad53d0176cae0f1a89f804f34bd5b4de9">More...</a><br /></td></tr>
 <tr class="separator:ad53d0176cae0f1a89f804f34bd5b4de9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6804b9b76814a927b692e5613411ed9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___s_s_d1331.html#ab6804b9b76814a927b692e5613411ed9">setRotation</a> (uint8_t r)</td></tr>
+<tr class="memdesc:ab6804b9b76814a927b692e5613411ed9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set origin of (0,0) and orientation of OLED display.  <a href="#ab6804b9b76814a927b692e5613411ed9">More...</a><br /></td></tr>
+<tr class="separator:ab6804b9b76814a927b692e5613411ed9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a837793af8c3841ea27dcaed0991f8e8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_adafruit___s_s_d1331.html#a837793af8c3841ea27dcaed0991f8e8a">setAddrWindow</a> (uint16_t x, uint16_t y, uint16_t w, uint16_t h)</td></tr>
 <tr class="memdesc:a837793af8c3841ea27dcaed0991f8e8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">SPI displays set an address window rectangle for blitting pixels.  <a href="#a837793af8c3841ea27dcaed0991f8e8a">More...</a><br /></td></tr>
 <tr class="separator:a837793af8c3841ea27dcaed0991f8e8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -292,6 +295,34 @@ static const int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ab6804b9b76814a927b692e5613411ed9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6804b9b76814a927b692e5613411ed9">&#9670;&nbsp;</a></span>setRotation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Adafruit_SSD1331::setRotation </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>r</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set origin of (0,0) and orientation of OLED display. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">r</td><td>The index for rotation, from 0-3 inclusive </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None (void). </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>SSD1331 works differently than most (all?) other SPITFT displays. With certain rotation changes the screen contents may change immediately into a peculiar format (mirrored, not necessarily rotated) (other displays, this only affects new drawing &ndash; rotation combinations can apply to different areas). Therefore, it's recommend to clear the screen (fillScreen(0)) before changing rotation. </dd></dl>
 
 </div>
 </div>
