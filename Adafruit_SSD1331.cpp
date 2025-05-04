@@ -26,10 +26,11 @@
  */
 
 #include "Adafruit_SSD1331.h"
-#include "pins_arduino.h"
-#include "wiring_private.h"
 
 /***********************************/
+
+#define ssd1331_swap(a, b)                                                     \
+  (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b))) ///< No-temp-var swap operation
 
 /*!
   @brief   SPI displays set an address window rectangle for blitting pixels
@@ -40,41 +41,42 @@
 */
 void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w,
                                      uint16_t h) {
-
   uint8_t x1 = x;
   uint8_t y1 = y;
-  if (x1 > 95)
-    x1 = 95;
-  if (y1 > 63)
-    y1 = 63;
+  if (x1 > _width - 1)
+    x1 = _width - 1;
+  if (y1 > _height - 1)
+    y1 = _height - 1;
 
   uint8_t x2 = (x + w - 1);
   uint8_t y2 = (y + h - 1);
-  if (x2 > 95)
-    x2 = 95;
-  if (y2 > 63)
-    y2 = 63;
+  if (x2 > _width - 1)
+    x2 = _width - 1;
+  if (y2 > _height - 1)
+    y2 = _height - 1;
 
   if (x1 > x2) {
-    uint8_t t = x2;
-    x2 = x1;
-    x1 = t;
+    ssd1331_swap(x1, x2);
   }
   if (y1 > y2) {
-    uint8_t t = y2;
-    y2 = y1;
-    y1 = t;
+    ssd1331_swap(y1, y2);
   }
 
-  sendCommand(0x15); // Column addr set
-  sendCommand(x1);
-  sendCommand(x2);
+  if (rotation & 1) { // Vertical address increment mode
+    ssd1331_swap(x1, y1);
+    ssd1331_swap(x2, y2);
+  }
 
-  sendCommand(0x75); // Column addr set
-  sendCommand(y1);
-  sendCommand(y2);
+  SPI_DC_LOW(); // Command mode
 
-  startWrite();
+  spiWrite(SSD1331_CMD_SETCOLUMN); // Column addr set
+  spiWrite(x1);
+  spiWrite(x2);
+
+  spiWrite(SSD1331_CMD_SETROW); // Row addr set
+  spiWrite(y1);
+  spiWrite(y2);
+  SPI_DC_HIGH(); // Exit Command mode
 }
 
 /**************************************************************************/
@@ -90,12 +92,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
   // Initialization Sequence
   sendCommand(SSD1331_CMD_DISPLAYOFF); // 0xAE
   sendCommand(SSD1331_CMD_SETREMAP);   // 0xA0
-#if defined SSD1331_COLORORDER_RGB
-  sendCommand(0x72); // RGB Color
-#else
-  sendCommand(0x76); // BGR Color
-#endif
-  sendCommand(SSD1331_CMD_STARTLINE); // 0xA1
+  sendCommand(SSD1331_CMD_STARTLINE);  // 0xA1
   sendCommand(0x0);
   sendCommand(SSD1331_CMD_DISPLAYOFFSET); // 0xA2
   sendCommand(0x0);
@@ -132,6 +129,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
   sendCommand(SSD1331_CMD_DISPLAYON); //--turn on oled panel
   _width = TFTWIDTH;
   _height = TFTHEIGHT;
+  setRotation(0);
 }
 
 /**************************************************************************/
@@ -173,9 +171,9 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
                                    int8_t rst)
     :
 #if defined(ESP8266)
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, cs, dc, rst) {
+      Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
 #else
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst) {
+      Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, spi, cs, dc, rst) {
 #endif
 }
 
@@ -187,4 +185,63 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
 /**************************************************************************/
 void Adafruit_SSD1331::enableDisplay(boolean enable) {
   sendCommand(enable ? SSD1331_CMD_DISPLAYON : SSD1331_CMD_DISPLAYOFF);
+}
+
+/**************************************************************************/
+/*!
+    @brief   Set origin of (0,0) and orientation of OLED display
+    @param   r
+             The index for rotation, from 0-3 inclusive
+    @return  None (void).
+    @note    SSD1331 works differently than most (all?) other SPITFT
+             displays. With certain rotation changes the screen contents
+             may change immediately into a peculiar format (mirrored, not
+             necessarily rotated) (other displays, this only affects new
+             drawing -- rotation combinations can apply to different
+             areas). Therefore, it's recommend to clear the screen
+             (fillScreen(0)) before changing rotation.
+*/
+/**************************************************************************/
+void Adafruit_SSD1331::setRotation(uint8_t r) {
+  // madctl bits:
+  // 6,7 Color depth (01 = 64K)
+  // 5   Odd/even split COM (0: disable, 1: enable)
+  // 4   Scan direction (0: top-down, 1: bottom-up)
+  // 3   Left-Right swapping on COM (0: disable, 1: enable)
+  // 2   Color remap (0: A->B->C, 1: C->B->A)
+  // 1   Column remap (0: 0-95, 1: 95-0)
+  // 0   Address increment (0: horizontal, 1: vertical)
+
+#if defined SSD1331_COLORORDER_RGB
+  uint8_t madctl = 0b01100000; // 64K, enable split, ABC
+#else
+  uint8_t madctl = 0b01100100; // 64K, enable split, CBA
+#endif
+  rotation = r & 3; // Clip input to valid range
+
+  switch (rotation) {
+  case 0:
+    madctl |= 0b00010010; // Scan bottom-up, column remap 95-0
+    _width = WIDTH;
+    _height = HEIGHT;
+    break;
+  case 1:
+    madctl |= 0b00000011; // column remap 95-0, vertical
+    _width = HEIGHT;
+    _height = WIDTH;
+    break;
+  case 2:
+    madctl |= 0b00000000; // None
+    _width = WIDTH;
+    _height = HEIGHT;
+    break;
+  case 3:
+    madctl |= 0b00010001; // Scan bottom-up, Vertical
+    _width = HEIGHT;
+    _height = WIDTH;
+    break;
+  }
+
+  sendCommand(SSD1331_CMD_SETREMAP);
+  sendCommand(madctl);
 }
