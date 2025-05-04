@@ -43,17 +43,17 @@ void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w,
                                      uint16_t h) {
   uint8_t x1 = x;
   uint8_t y1 = y;
-  if (x1 > TFTWIDTH - 1)
-    x1 = TFTWIDTH - 1;
-  if (y1 > TFTHEIGHT - 1)
-    y1 = TFTHEIGHT - 1;
+  if (x1 > _width - 1)
+    x1 = _width - 1;
+  if (y1 > _height - 1)
+    y1 = _height - 1;
 
   uint8_t x2 = (x + w - 1);
   uint8_t y2 = (y + h - 1);
-  if (x2 > TFTWIDTH - 1)
-    x2 = TFTWIDTH - 1;
-  if (y2 > TFTHEIGHT - 1)
-    y2 = TFTHEIGHT - 1;
+  if (x2 > _width - 1)
+    x2 = _width - 1;
+  if (y2 > _height - 1)
+    y2 = _height - 1;
 
   if (x1 > x2) {
     ssd1331_swap(x1, x2);
@@ -62,18 +62,22 @@ void Adafruit_SSD1331::setAddrWindow(uint16_t x, uint16_t y, uint16_t w,
     ssd1331_swap(y1, y2);
   }
 
-  SPI_DC_LOW();          // Command mode
+  if (rotation & 1) { // Vertical address increment mode
+    ssd1331_swap(x1, y1);
+    ssd1331_swap(x2, y2);
+  }
+
+  SPI_DC_LOW(); // Command mode
 
   spiWrite(SSD1331_CMD_SETCOLUMN); // Column addr set
   spiWrite(x1);
   spiWrite(x2);
 
-  spiWrite(SSD1331_CMD_SETROW);     // Row addr set
+  spiWrite(SSD1331_CMD_SETROW); // Row addr set
   spiWrite(y1);
   spiWrite(y2);
-  SPI_DC_HIGH();          // Exit Command mode
+  SPI_DC_HIGH(); // Exit Command mode
 }
-
 
 /**************************************************************************/
 /*!
@@ -89,9 +93,9 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
   sendCommand(SSD1331_CMD_DISPLAYOFF); // 0xAE
   sendCommand(SSD1331_CMD_SETREMAP);   // 0xA0
 #if defined SSD1331_COLORORDER_RGB
-  sendCommand(0x72); // RGB Color
+  // sendCommand(0x72); // RGB Color
 #else
-  sendCommand(0x76); // BGR Color
+  // sendCommand(0x76); // BGR Color
 #endif
   sendCommand(SSD1331_CMD_STARTLINE); // 0xA1
   sendCommand(0x0);
@@ -130,6 +134,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
   sendCommand(SSD1331_CMD_DISPLAYON); //--turn on oled panel
   _width = TFTWIDTH;
   _height = TFTHEIGHT;
+  setRotation(0);
 }
 
 /**************************************************************************/
@@ -171,9 +176,9 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
                                    int8_t rst)
     :
 #if defined(ESP8266)
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, cs, dc, rst) {
+      Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
 #else
-      Adafruit_SPITFT(TFTWIDTH, TFTWIDTH, spi, cs, dc, rst) {
+      Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, spi, cs, dc, rst) {
 #endif
 }
 
@@ -185,4 +190,51 @@ Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
 /**************************************************************************/
 void Adafruit_SSD1331::enableDisplay(boolean enable) {
   sendCommand(enable ? SSD1331_CMD_DISPLAYON : SSD1331_CMD_DISPLAYOFF);
+}
+
+void Adafruit_SSD1331::setRotation(uint8_t r) {
+  // madctl bits:
+  // 6,7 Color depth (01 = 64K)
+  // 5   Odd/even split COM (0: disable, 1: enable)
+  // 4   Scan direction (0: top-down, 1: bottom-up)
+  // 3   Left-Right swapping on COM (0: disable, 1: enable)
+  // 2   Color remap (0: A->B->C, 1: C->B->A)
+  // 1   Column remap (0: 0-95, 1: 95-0)
+  // 0   Address increment (0: horizontal, 1: vertical)
+
+#if defined SSD1331_COLORORDER_RGB
+  uint8_t madctl = 0b01100000; // 64K, enable split, ABC
+#else
+  uint8_t madctl = 0b01100100; // 64K, enable split, CBA
+#endif
+  rotation = r & 3; // Clip input to valid range
+
+  switch (rotation) {
+  case 0:
+    madctl |= 0b00010010; // Scan bottom-up
+    _width = WIDTH;
+    _height = HEIGHT;
+    break;
+  case 1:
+    madctl |= 0b00000011; // Scan bottom-up, column remap 127-0, vertical
+    _width = HEIGHT;
+    _height = WIDTH;
+    break;
+  case 2:
+    madctl |= 0b00000000; // Column remap 127-0
+    _width = WIDTH;
+    _height = HEIGHT;
+    break;
+  case 3:
+    madctl |= 0b00010001; // Vertical
+    _width = HEIGHT;
+    _height = WIDTH;
+    break;
+  }
+
+  sendCommand(SSD1331_CMD_SETREMAP);
+  sendCommand(madctl);
+  uint8_t startline = (rotation < 2) ? HEIGHT : 0;
+  sendCommand(SSD1331_CMD_STARTLINE);
+  sendCommand(startline);
 }

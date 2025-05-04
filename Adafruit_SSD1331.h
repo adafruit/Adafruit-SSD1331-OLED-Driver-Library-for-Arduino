@@ -5,7 +5,6 @@
 #ifndef ADAFRUIT_SSD1331_H
 #define ADAFRUIT_SSD1331_H
 
-
 #include <Adafruit_SPITFT.h>
 
 /*!
@@ -63,7 +62,7 @@ public:
 
   // commands
   void begin(uint32_t begin = 8000000);
-
+  void setRotation(uint8_t r);
   void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
   void enableDisplay(boolean enable);
