@@ -92,12 +92,7 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
   // Initialization Sequence
   sendCommand(SSD1331_CMD_DISPLAYOFF); // 0xAE
   sendCommand(SSD1331_CMD_SETREMAP);   // 0xA0
-#if defined SSD1331_COLORORDER_RGB
-  // sendCommand(0x72); // RGB Color
-#else
-  // sendCommand(0x76); // BGR Color
-#endif
-  sendCommand(SSD1331_CMD_STARTLINE); // 0xA1
+  sendCommand(SSD1331_CMD_STARTLINE);  // 0xA1
   sendCommand(0x0);
   sendCommand(SSD1331_CMD_DISPLAYOFFSET); // 0xA2
   sendCommand(0x0);
