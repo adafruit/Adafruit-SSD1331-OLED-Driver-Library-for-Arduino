@@ -187,6 +187,21 @@ void Adafruit_SSD1331::enableDisplay(boolean enable) {
   sendCommand(enable ? SSD1331_CMD_DISPLAYON : SSD1331_CMD_DISPLAYOFF);
 }
 
+/**************************************************************************/
+/*!
+    @brief   Set origin of (0,0) and orientation of OLED display
+    @param   r
+             The index for rotation, from 0-3 inclusive
+    @return  None (void).
+    @note    SSD1331 works differently than most (all?) other SPITFT
+             displays. With certain rotation changes the screen contents
+             may change immediately into a peculiar format (mirrored, not
+             necessarily rotated) (other displays, this only affects new
+             drawing -- rotation combinations can apply to different
+             areas). Therefore, it's recommend to clear the screen
+             (fillScreen(0)) before changing rotation.
+*/
+/**************************************************************************/
 void Adafruit_SSD1331::setRotation(uint8_t r) {
   // madctl bits:
   // 6,7 Color depth (01 = 64K)
