@@ -206,22 +206,22 @@ void Adafruit_SSD1331::setRotation(uint8_t r) {
 
   switch (rotation) {
   case 0:
-    madctl |= 0b00010010; // Scan bottom-up
+    madctl |= 0b00010010; // Scan bottom-up, column remap 95-0
     _width = WIDTH;
     _height = HEIGHT;
     break;
   case 1:
-    madctl |= 0b00000011; // Scan bottom-up, column remap 127-0, vertical
+    madctl |= 0b00000011; // column remap 95-0, vertical
     _width = HEIGHT;
     _height = WIDTH;
     break;
   case 2:
-    madctl |= 0b00000000; // Column remap 127-0
+    madctl |= 0b00000000; // None
     _width = WIDTH;
     _height = HEIGHT;
     break;
   case 3:
-    madctl |= 0b00010001; // Vertical
+    madctl |= 0b00010001; // Scan bottom-up, Vertical
     _width = HEIGHT;
     _height = WIDTH;
     break;
@@ -229,7 +229,4 @@ void Adafruit_SSD1331::setRotation(uint8_t r) {
 
   sendCommand(SSD1331_CMD_SETREMAP);
   sendCommand(madctl);
-  uint8_t startline = (rotation < 2) ? HEIGHT : 0;
-  sendCommand(SSD1331_CMD_STARTLINE);
-  sendCommand(startline);
 }
