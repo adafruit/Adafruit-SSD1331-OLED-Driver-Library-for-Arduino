@@ -142,8 +142,8 @@ void Adafruit_SSD1331::begin(uint32_t freq) {
     @param    rst   Reset pin # (optional, pass -1 if unused)
 */
 /**************************************************************************/
-Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t mosi,
-                                   int8_t sclk, int8_t rst)
+Adafruit_SSD1331::Adafruit_SSD1331(int16_t cs, int16_t dc, int16_t mosi,
+                                   int16_t sclk, int16_t rst)
     : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, mosi, sclk, rst, -1) {}
 
 /**************************************************************************/
@@ -154,7 +154,7 @@ Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t mosi,
     @param    rst   Reset pin # (optional, pass -1 if unused)
 */
 /**************************************************************************/
-Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t rst)
+Adafruit_SSD1331::Adafruit_SSD1331(int16_t cs, int16_t dc, int16_t rst)
     : Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {}
 
 /**************************************************************************/
@@ -167,8 +167,8 @@ Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t rst)
     @param    rst   Reset pin # (optional, pass -1 if unused)
 */
 /**************************************************************************/
-Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc,
-                                   int8_t rst)
+Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int16_t cs, int16_t dc,
+                                   int16_t rst)
     :
 #if defined(ESP8266)
       Adafruit_SPITFT(TFTWIDTH, TFTHEIGHT, cs, dc, rst) {
