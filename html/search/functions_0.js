@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['adafruit_5fssd1331',['Adafruit_SSD1331',['../class_adafruit___s_s_d1331.html#a741732cd4194fd5b61c284359ccac204',1,'Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t mosi, int8_t sclk, int8_t rst)'],['../class_adafruit___s_s_d1331.html#af6eefebf610c2fcc24fd408c74fe9cbc',1,'Adafruit_SSD1331::Adafruit_SSD1331(int8_t cs, int8_t dc, int8_t rst)'],['../class_adafruit___s_s_d1331.html#a4836cd449bca9612b56c3031d2c5bf2b',1,'Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int8_t cs, int8_t dc, int8_t rst=-1)']]]
+  ['adafruit_5fssd1331',['Adafruit_SSD1331',['../class_adafruit___s_s_d1331.html#ac8b67c7462ff323f54294a8dc931ec2d',1,'Adafruit_SSD1331::Adafruit_SSD1331(int16_t cs, int16_t dc, int16_t mosi, int16_t sclk, int16_t rst)'],['../class_adafruit___s_s_d1331.html#a67ec43ebc149a5e290a57c22d5f6905a',1,'Adafruit_SSD1331::Adafruit_SSD1331(int16_t cs, int16_t dc, int16_t rst)'],['../class_adafruit___s_s_d1331.html#abe64047b7deac50e0025de4d3444b9c9',1,'Adafruit_SSD1331::Adafruit_SSD1331(SPIClass *spi, int16_t cs, int16_t dc, int16_t rst=-1)']]]
 ];
